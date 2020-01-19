@@ -1,0 +1,7 @@
+name: dartox
+description: A Dart port of the Lox interpreter.
+author: Kallen Tu <kallentu@gmail.com>
+dependencies:
+  args: ^1.5.2
+executables:
+  dartox: dartox
