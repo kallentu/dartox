@@ -1,11 +1,13 @@
 import "package:charcode/ascii.dart";
-
+import 'package:dartox/src/error.dart';
 import 'package:dartox/src/token.dart';
 import 'package:dartox/src/token_type.dart';
 
 class Scanner {
   final String _source;
   final List<Token> _tokens = List();
+
+  final ErrorReporter _errorReporter = ErrorReporter();
 
   int _start = 0;
   int _current = 0;
@@ -56,6 +58,10 @@ class Scanner {
         break;
       case $asterisk:
         _addToken(TokenType.STAR);
+        break;
+      default:
+        // Keeps scanning after reporting error, but will not execute code.
+        _errorReporter.error(_line, "Unexpected character.");
         break;
     }
   }
