@@ -1,4 +1,4 @@
-import 'token_type.dart';
+import 'package:dartox/src/token_type.dart';
 
 class Token {
   final TokenType type;

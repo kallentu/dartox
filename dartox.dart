@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:args/args.dart';
+import 'package:dartox/src/token.dart';
+import 'package:dartox/src/scanner.dart';
 
 bool hadError = false;
 
@@ -32,14 +34,15 @@ void _runPrompt() {
 }
 
 void _run(String source) {
-//    TODO(kallentu): Implement Scanner, Token.
-//    Scanner scanner = new Scanner(source);
-//    List<Token> tokens = scanner.scanTokens();
-//
-//    // For now, just print the tokens.
-//    for (Token token : tokens) {
-//      System.out.println(token);
-//    }
+    Scanner scanner = new Scanner(source);
+    List<Token> tokens = scanner.scanTokens();
+print("wait");
+    // For now, just print the tokens.
+    // TODO: Add side effects.
+    for (Token token in tokens) {
+      print("yo ");
+      print(token);
+    }
 }
 
 void error(int line, String message) {
