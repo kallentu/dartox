@@ -59,11 +59,55 @@ class Scanner {
       case $asterisk:
         _addToken(TokenType.STAR);
         break;
+      case $exclamation:
+        _addToken(_match($equal) ? TokenType.BANG_EQUAL : TokenType.BANG);
+        break;
+      case $equal:
+        _addToken(_match($equal) ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
+        break;
+      case $less_than:
+        _addToken(_match($equal) ? TokenType.LESS_EQUAL : TokenType.LESS);
+        break;
+      case $greater_than:
+        _addToken(_match($equal) ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+        break;
+      case $slash:
+        if (_match($slash)) {
+          // Comments go until end of the line
+          while (_peek() != $lf && !_isAtEnd()) _advance();
+        } else {
+          _addToken(TokenType.SLASH);
+        }
+        break;
+      case $space:
+      case $cr:
+      case $tab:
+        // Ignore whitespace
+        break;
+      case $lf:
+        // Newline, increment counter.
+        _line++;
+        break;
       default:
         // Keeps scanning after reporting error, but will not execute code.
         _errorReporter.error(_line, "Unexpected character.");
         break;
     }
+  }
+
+  /// Identify if the next token is equivalent to [expected].
+  /// Only consumes the token if it is [expected].
+  bool _match(int expected) {
+    if (_isAtEnd()) return false;
+    if (_source.codeUnitAt(_current) != expected) return false;
+    _current++;
+    return true;
+  }
+
+  /// Look at the next character without consuming.
+  int _peek() {
+    if (_isAtEnd()) return $nul;
+    return _source.codeUnitAt(_current);
   }
 
   bool _isAtEnd() => _current >= _source.length;
