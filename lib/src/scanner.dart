@@ -88,6 +88,9 @@ class Scanner {
         // Newline, increment counter.
         _line++;
         break;
+      case $quotation:
+        _string();
+        break;
       default:
         // Keeps scanning after reporting error, but will not execute code.
         _errorReporter.error(_line, "Unexpected character.");
@@ -117,5 +120,26 @@ class Scanner {
   void _addToken(TokenType type, {Object literal}) {
     String text = _source.substring(_start, _current);
     _tokens.add(new Token(type, text, literal, _line));
+  }
+
+  void _string() {
+    // Move until string ends since it can be a multiline string.
+    while(_peek() != $quotation && !_isAtEnd()) {
+      if (_peek() == $lf) _line++;
+      _advance();
+    }
+
+    // Unterminated string
+    if (_isAtEnd()) {
+      _errorReporter.error(_line, "Unterminated string.");
+      return;
+    }
+
+    // Close quotation "
+    _advance();
+
+    // Trim the surrounding quotes
+    String value = _source.substring(_start + 1, _current - 1);
+    _addToken(TokenType.STRING, literal: value);
   }
 }
