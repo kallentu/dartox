@@ -16,7 +16,7 @@ class Scanner {
   Scanner(this._source);
 
   List<Token> scanTokens() {
-    while(!_isAtEnd()) {
+    while (!_isAtEnd()) {
       // We are at the beginning of the next lexeme.
       _start = _current;
       _scanToken();
@@ -28,7 +28,7 @@ class Scanner {
 
   void _scanToken() {
     int c = _advance();
-    switch(c) {
+    switch (c) {
       case $lparen:
         _addToken(TokenType.LEFT_PAREN);
         break;
@@ -92,10 +92,29 @@ class Scanner {
         _string();
         break;
       default:
-        // Keeps scanning after reporting error, but will not execute code.
-        _errorReporter.error(_line, "Unexpected character.");
+        if (_isDigit(c)) {
+          _number();
+        } else {
+          // Keeps scanning after reporting error, but will not execute code.
+          _errorReporter.error(_line, "Unexpected character.");
+        }
         break;
     }
+  }
+
+  void _number() {
+    while (_isDigit(_peek())) _advance();
+
+    // Look for a fractional part
+    if (_peek() == $dot && _isDigit(_peekNext())) {
+      // Consume the '.'
+      _advance();
+
+      while (_isDigit(_peek())) _advance();
+    }
+
+    _addToken(TokenType.NUMBER,
+        literal: double.parse(_source.substring(_start, _current)));
   }
 
   /// Identify if the next token is equivalent to [expected].
@@ -113,6 +132,14 @@ class Scanner {
     return _source.codeUnitAt(_current);
   }
 
+  /// One look-ahead character for peeking.
+  int _peekNext() {
+    if (_current + 1 >= _source.length) return $nul;
+    return _source.codeUnitAt(_current + 1);
+  }
+
+  bool _isDigit(int c) => c >= $0 && c <= $9;
+
   bool _isAtEnd() => _current >= _source.length;
 
   int _advance() => _source.codeUnitAt(++_current - 1);
@@ -124,7 +151,7 @@ class Scanner {
 
   void _string() {
     // Move until string ends since it can be a multiline string.
-    while(_peek() != $quotation && !_isAtEnd()) {
+    while (_peek() != $quotation && !_isAtEnd()) {
       if (_peek() == $lf) _line++;
       _advance();
     }
