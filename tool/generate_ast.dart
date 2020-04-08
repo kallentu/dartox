@@ -42,7 +42,14 @@ void _defineAst(String outputDir, String baseName, List<String> imports,
 
   contents += "\n";
   contents += "abstract class " + baseName + " {\n";
+
+  // Base accept() method.
+  contents += "  R accept<R>(" + baseName + "Visitor<R> visitor);\n";
+
   contents += "}\n\n";
+
+  // Add the visitor for the AST classes
+  contents += _defineVisitor(baseName, types) + "\n";
 
   // Add the AST classes to the file.
   for (int i = 0; i < types.length; i++) {
@@ -60,17 +67,37 @@ void _defineAst(String outputDir, String baseName, List<String> imports,
   new File(path).writeAsString(contents);
 }
 
+String _defineVisitor(String baseName, List<String> types) {
+  String contents = "abstract class " + baseName + "Visitor<R> {\n";
+
+  for (String type in types) {
+    String typeName = type.split(":")[0].trim();
+    contents += "  R visit" +
+        typeName +
+        baseName +
+        "(" +
+        typeName +
+        " " +
+        baseName.toLowerCase() +
+        ");\n";
+  }
+
+  contents += "}\n";
+
+  return contents;
+}
+
 String _defineType(String baseName, String className, String fieldList) {
   String contents = "class " + className + " extends " + baseName + " {\n";
 
   // Fields
   List<String> fields = fieldList.split(", ");
   for (String field in fields) {
-    contents += " final " + field + ";\n";
+    contents += "  final " + field + ";\n";
   }
 
   // Constructor
-  contents += " " + className + "(";
+  contents += "  " + className + "(";
   for (int i = 0; i < fields.length; i++) {
     String name = fields[i].split(" ")[1];
     contents += "this." + name;
@@ -81,6 +108,11 @@ String _defineType(String baseName, String className, String fieldList) {
     }
   }
   contents += ");\n";
+
+  // Visitor pattern
+  contents += "  R accept<R>(" + baseName + "Visitor<R> visitor) {\n";
+  contents += "    return visitor.visit" + className + baseName + "(this);\n";
+  contents += "  }\n";
 
   contents += "}\n";
   return contents;
