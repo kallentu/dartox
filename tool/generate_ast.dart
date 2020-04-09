@@ -3,7 +3,7 @@ import 'package:args/args.dart';
 import 'package:charcode/ascii.dart';
 
 /// generate_ast.dart generates boiler-plate AST files.
-/// Eg. "dart generate_ast.dart ../lib/src"
+/// Eg. "dart tool/generate_ast.dart lib/src"
 main(List<String> args) {
   final ArgParser argParser = new ArgParser();
   ArgResults argResults = argParser.parse(args);
@@ -110,6 +110,7 @@ String _defineType(String baseName, String className, String fieldList) {
   contents += ");\n";
 
   // Visitor pattern
+  contents += "  @override\n";
   contents += "  R accept<R>(" + baseName + "Visitor<R> visitor) {\n";
   contents += "    return visitor.visit" + className + baseName + "(this);\n";
   contents += "  }\n";
