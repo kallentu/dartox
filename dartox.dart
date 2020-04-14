@@ -3,11 +3,14 @@ import 'package:args/args.dart';
 import 'package:dartox/src/token.dart';
 import 'package:dartox/src/scanner.dart';
 import 'package:dartox/src/error.dart';
+import 'package:dartox/src/expr.dart';
+import 'package:dartox/src/parser.dart';
+import 'package:dartox/src/ast_printer.dart';
 
 final ErrorReporter errorReporter = ErrorReporter();
 
 main(List<String> args) {
-  final ArgParser argParser = new ArgParser()
+  final ArgParser argParser = ArgParser()
     ..addOption('source', abbr: 's', help: "The file you want to compile.");
   ArgResults argResults = argParser.parse(args);
 
@@ -35,12 +38,20 @@ void _runPrompt() {
 }
 
 void _run(String source) {
-    Scanner scanner = new Scanner(source);
-    List<Token> tokens = scanner.scanTokens();
+  Scanner scanner = Scanner(source);
+  List<Token> tokens = scanner.scanTokens();
+  Parser parser = Parser(tokens, errorReporter);
+  Expr expression = parser.parse();
 
-    // For now, just print the tokens.
-    // TODO: Add side effects.
-    for (Token token in tokens) {
-      print(token);
-    }
+  // Stop if there is a syntax error.
+  if (errorReporter.hadError) return;
+
+  print(AstPrinter().print(expression));
+}
+
+/// Debug method to print all tokens.
+void _printTokens(List<Token> tokens) {
+  for (Token token in tokens) {
+    print(token);
+  }
 }

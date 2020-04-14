@@ -1,12 +1,23 @@
+import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
 import 'package:dartox/src/token.dart';
 import 'package:dartox/src/token_type.dart';
 
 class Parser {
   final List<Token> _tokens;
+  final ErrorReporter errorReporter;
   int _current = 0;
 
-  Parser(this._tokens);
+  Parser(this._tokens, this.errorReporter);
+
+  Expr parse() {
+    try {
+      return _expression();
+    } catch (e) {
+      // Syntax error, no usable syntax tree.
+      return null;
+    }
+  }
 
   /// expression → equality
   Expr _expression() => _equality();
@@ -28,7 +39,12 @@ class Parser {
   Expr _comparison() {
     Expr expr = _addition();
 
-    while(_match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
+    while (_match([
+      TokenType.GREATER,
+      TokenType.GREATER_EQUAL,
+      TokenType.LESS,
+      TokenType.LESS_EQUAL
+    ])) {
       Token operator = _previous();
       Expr right = _addition();
       expr = Binary(expr, operator, right);
@@ -88,10 +104,11 @@ class Parser {
 
     if (_match([TokenType.LEFT_PAREN])) {
       Expr expr = _expression();
-      // TODO: Parser recovery.
-      //_consume(TokenType.RIGHT_PAREN, "Expected ')' after expression.");
+      _consume(TokenType.RIGHT_PAREN, "Expected ')' after expression.");
       return Grouping(expr);
     }
+
+    throw _error(_peek(), "Expected expression.");
   }
 
   /// Checks the current token is of given type, consumes token.
@@ -105,6 +122,11 @@ class Parser {
 
     // Did not match any of the wanted types.
     return false;
+  }
+
+  Token _consume(TokenType type, String message) {
+    if (_check(type)) return _advance();
+    throw _error(_peek(), message);
   }
 
   /// Checks the current token is of given type, does not consume token.
@@ -127,4 +149,37 @@ class Parser {
 
   /// Return, but do not consume previous token.
   Token _previous() => _tokens.elementAt(_current - 1);
+
+  ParseError _error(Token token, String message) {
+    errorReporter.tokenError(token, message);
+    return ParseError();
+  }
+
+  /// Discards tokens until we move out of panic mode and into a new statement.
+  void _synchronize() {
+    _advance();
+
+    while (!_isAtEnd()) {
+      // Statement finished, return.
+      if (_previous().type == TokenType.SEMICOLON) return;
+
+      // Stop when we are about to start another statement.
+      switch (_peek().type) {
+        case TokenType.CLASS:
+        case TokenType.FUN:
+        case TokenType.VAR:
+        case TokenType.FOR:
+        case TokenType.IF:
+        case TokenType.WHILE:
+        case TokenType.PRINT:
+        case TokenType.RETURN:
+          return;
+        default:
+      }
+
+      _advance();
+    }
+  }
 }
+
+class ParseError implements Exception {}
