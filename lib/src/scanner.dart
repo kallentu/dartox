@@ -15,8 +15,7 @@ class Scanner {
   int _current = 0;
   int _line = 0;
 
-  final Map<String, TokenType> _keywords = new HashMap<String, TokenType>();
-
+  final Map<String, TokenType> _keywords = HashMap<String, TokenType>();
 
   Scanner(this._source) {
     // Initialize the static keywords.
