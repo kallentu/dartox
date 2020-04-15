@@ -43,6 +43,8 @@ void _run(String source) {
   Parser parser = Parser(tokens, errorReporter);
   Expr expression = parser.parse();
 
+  _printTokens(tokens);
+
   // Stop if there is a syntax error.
   if (errorReporter.hadError) return;
 

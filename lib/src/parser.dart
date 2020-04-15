@@ -23,8 +23,8 @@ class Parser {
   ///        | commaExpression
   /// The ternary operator is left-associative.
   Expr _ternary() {
-    Expr expr =  _commaExpression();
-    
+    Expr expr = _commaExpression();
+
     if (_match([TokenType.QUESTION])) {
       Token question = _previous();
       Expr left = _commaExpression();
@@ -37,8 +37,20 @@ class Parser {
   }
 
   /// commaExpression → expression ("," expression)*
+  ///                | "," expression (as error production)
   Expr _commaExpression() {
-    Expr expr = _expression();
+    Expr expr;
+
+    // Error production for missing left operand, consumes operator and expr.
+    if (_match([TokenType.COMMA])) {
+      Token operator = _previous();
+      _expression(); // Consume the expression.
+      _error(operator, "Expected left operand for comma expression.");
+      expr = null;
+    } else {
+      // Have proper left operand.
+      expr = _expression();
+    }
 
     while (_match([TokenType.COMMA])) {
       Token comma = _previous();
@@ -53,8 +65,20 @@ class Parser {
   Expr _expression() => _equality();
 
   /// equality → comparison ( ( "!=" | "==" ) comparison )*
+  ///         | ( "!=" | "==" ) comparison (as error production)
   Expr _equality() {
-    Expr expr = _comparison();
+    Expr expr;
+
+    // Error production for missing left operand, consumes operator and expr.
+    if (_match([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])) {
+      Token operator = _previous();
+      _comparison(); // Consume the comparison.
+      _error(operator, "Expected left operand for equality.");
+      expr = null;
+    } else {
+      // Have proper left operand.
+      expr = _comparison();
+    }
 
     while (_match([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])) {
       Token operator = _previous();
@@ -66,8 +90,25 @@ class Parser {
   }
 
   /// comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )*
+  ///           | ( ">" | ">=" | "<" | "<=" ) addition (as error production)
   Expr _comparison() {
-    Expr expr = _addition();
+    Expr expr;
+
+    // Error production for missing left operand, consumes operator and expr.
+    if (_match([
+      TokenType.GREATER,
+      TokenType.GREATER_EQUAL,
+      TokenType.LESS,
+      TokenType.LESS_EQUAL
+    ])) {
+      Token operator = _previous();
+      _addition(); // Consume the expression.
+      _error(operator, "Expected left operand for comparison.");
+      expr = null;
+    } else {
+      // Have proper left operand.
+      expr = _addition();
+    }
 
     while (_match([
       TokenType.GREATER,
@@ -84,8 +125,20 @@ class Parser {
   }
 
   /// addition → multiplication ( ( "-" | "+" ) multiplication )*
+  ///         | ( "-" | "+" ) multiplication (as error production)
   Expr _addition() {
-    Expr expr = _multiplication();
+    Expr expr;
+
+    // Error production for missing left operand, consumes operator and expr.
+    if (_match([TokenType.MINUS, TokenType.PLUS])) {
+      Token operator = _previous();
+      _multiplication(); // Consume the expression.
+      _error(operator, "Expected left operand for addition/subtraction.");
+      expr = null;
+    } else {
+      // Have proper left operand.
+      expr = _multiplication();
+    }
 
     while (_match([TokenType.MINUS, TokenType.PLUS])) {
       Token operator = _previous();
@@ -97,8 +150,20 @@ class Parser {
   }
 
   /// multiplication → unary ( ( "/" | "*" ) unary )*
+  ///               | ( "/" | "*" ) unary (as error production)
   Expr _multiplication() {
-    Expr expr = _unary();
+    Expr expr;
+
+    // Error production for missing left operand, consumes operator and expr.
+    if (_match([TokenType.SLASH, TokenType.STAR])) {
+      Token operator = _previous();
+      _unary(); // Consume the expression.
+      _error(operator, "Expected left operand for multiplication/division.");
+      expr = null;
+    } else {
+      // Have proper left operand.
+      expr = _unary();
+    }
 
     while (_match([TokenType.SLASH, TokenType.STAR])) {
       Token operator = _previous();

@@ -12,9 +12,9 @@ class ErrorReporter {
   /// Report token location and token itself.
   void tokenError(Token token, String message) {
     if (token.type == TokenType.EOF) {
-      _report(token.line, " at end", message);
+      _report(token.line, "at end", message);
     } else {
-      _report(token.line, " at '" + token.lexeme + "'", message);
+      _report(token.line, "at '" + token.lexeme + "'", message);
     }
   }
 
