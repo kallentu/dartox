@@ -12,11 +12,22 @@ class Parser {
 
   Expr parse() {
     try {
-      return _expression();
+      return _commaExpression();
     } catch (e) {
       // Syntax error, no usable syntax tree.
       return null;
     }
+  }
+
+  /// commaExpression → expression ("," expression)*
+  Expr _commaExpression() {
+    Expr expr = _expression();
+
+    while (_match([TokenType.COMMA])) {
+      expr = _expression();
+    }
+
+    return expr;
   }
 
   /// expression → equality
