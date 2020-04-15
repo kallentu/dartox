@@ -12,11 +12,28 @@ class Parser {
 
   Expr parse() {
     try {
-      return _commaExpression();
+      return _ternary();
     } catch (e) {
       // Syntax error, no usable syntax tree.
       return null;
     }
+  }
+
+  /// ternary → (commaExpression "?" commaExpression ":")* ternary
+  ///        | commaExpression
+  /// The ternary operator is left-associative.
+  Expr _ternary() {
+    Expr expr =  _commaExpression();
+    
+    if (_match([TokenType.QUESTION])) {
+      Token question = _previous();
+      Expr left = _commaExpression();
+      Token colon = _consume(TokenType.COLON, "Expected ':' after '?'.");
+      Expr right = _ternary();
+      expr = Ternary(expr, question, left, colon, right);
+    }
+
+    return expr;
   }
 
   /// commaExpression → expression ("," expression)*
@@ -24,7 +41,9 @@ class Parser {
     Expr expr = _expression();
 
     while (_match([TokenType.COMMA])) {
-      expr = _expression();
+      Token comma = _previous();
+      Expr right = _expression();
+      expr = Binary(expr, comma, right);
     }
 
     return expr;
@@ -135,6 +154,7 @@ class Parser {
     return false;
   }
 
+  /// If correct type, will return token, otherwise throws error.
   Token _consume(TokenType type, String message) {
     if (_check(type)) return _advance();
     throw _error(_peek(), message);

@@ -81,6 +81,12 @@ class Scanner {
       case $asterisk:
         _addToken(TokenType.STAR);
         break;
+      case $question:
+        _addToken(TokenType.QUESTION);
+        break;
+      case $colon:
+        _addToken(TokenType.COLON);
+        break;
       case $exclamation:
         _addToken(_match($equal) ? TokenType.BANG_EQUAL : TokenType.BANG);
         break;

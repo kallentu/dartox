@@ -1,6 +1,4 @@
 import 'package:dartox/src/expr.dart';
-import 'package:dartox/src/token.dart';
-import 'package:dartox/src/token_type.dart';
 
 class AstPrinter extends ExprVisitor<String> {
   String print(Expr expr) {
@@ -8,14 +6,17 @@ class AstPrinter extends ExprVisitor<String> {
   }
 
   @override
-  String visitBinaryExpr(Binary expr) {
-    return _parenthesize(expr.operator.lexeme, [expr.left, expr.right]);
-  }
+  String visitBinaryExpr(Binary expr) =>
+      _parenthesize([expr.operator.lexeme], [expr.left, expr.right]);
 
   @override
-  String visitGroupingExpr(Grouping expr) {
-    return _parenthesize("group", [expr.expression]);
-  }
+  String visitTernaryExpr(Ternary expr) => _parenthesize(
+      [expr.operator1.lexeme, expr.operator2.lexeme],
+      [expr.value, expr.left, expr.right]);
+
+  @override
+  String visitGroupingExpr(Grouping expr) =>
+      _parenthesize(["group"], [expr.expression]);
 
   @override
   String visitLiteralExpr(Literal expr) {
@@ -24,12 +25,15 @@ class AstPrinter extends ExprVisitor<String> {
   }
 
   @override
-  String visitUnaryExpr(Unary expr) {
-    return _parenthesize(expr.operator.lexeme, [expr.right]);
-  }
+  String visitUnaryExpr(Unary expr) =>
+      _parenthesize([expr.operator.lexeme], [expr.right]);
 
-  String _parenthesize(String name, List<Expr> expressions) {
-    String contents = "(" + name;
+  String _parenthesize(List<String> names, List<Expr> expressions) {
+    String contents = "(";
+    for (String name in names) {
+      contents += " " + name;
+    }
+
     for (Expr expr in expressions) {
       contents += " ";
       contents += expr.accept(this);

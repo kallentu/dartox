@@ -19,6 +19,7 @@ main(List<String> args) {
     "package:dartox/src/token.dart"
   ], [
     "Binary   : Expr left, Token operator, Expr right",
+    "Ternary  : Expr value, Token operator1, Expr left, Token operator2, Expr right",
     "Grouping : Expr expression",
     "Literal  : Object value",
     "Unary    : Token operator, Expr right"
