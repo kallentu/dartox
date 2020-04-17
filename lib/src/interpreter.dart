@@ -1,4 +1,6 @@
 import 'package:dartox/src/expr.dart';
+import 'package:dartox/src/runtime_error.dart';
+import 'package:dartox/src/token.dart';
 import 'package:dartox/src/token_type.dart';
 
 class Interpreter implements ExprVisitor<Object> {
@@ -9,18 +11,25 @@ class Interpreter implements ExprVisitor<Object> {
 
     switch (expr.operator.type) {
       case TokenType.GREATER:
+        _checkNumberOperands(expr.operator, [right]);
         return (left as double) > (right as double);
       case TokenType.GREATER_EQUAL:
+        _checkNumberOperands(expr.operator, [right]);
         return (left as double) >= (right as double);
       case TokenType.LESS:
+        _checkNumberOperands(expr.operator, [right]);
         return (left as double) < (right as double);
       case TokenType.LESS_EQUAL:
+        _checkNumberOperands(expr.operator, [right]);
         return (left as double) <= (right as double);
       case TokenType.BANG_EQUAL:
+        _checkNumberOperands(expr.operator, [right]);
         return !_isEqual(left, right);
       case TokenType.EQUAL_EQUAL:
+        _checkNumberOperands(expr.operator, [right]);
         return _isEqual(left, right);
       case TokenType.MINUS:
+        _checkNumberOperands(expr.operator, [right]);
         return (left as double) - (right as double);
       case TokenType.PLUS:
         if (left is double && right is double) {
@@ -29,7 +38,7 @@ class Interpreter implements ExprVisitor<Object> {
           return left + right;
         }
         // Unreachable for values of PLUS.
-        return null;
+        throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
       case TokenType.SLASH:
         return (left as double) / (right as double);
       case TokenType.STAR:
@@ -52,15 +61,12 @@ class Interpreter implements ExprVisitor<Object> {
     Object left = _evaluate(expr.left);
     Object right = _evaluate(expr.right);
 
+    // Pre-runtime checks to prevent runtime errors.
+    _checkNumberOperands(expr.operator2, [left, right]);
+
     // Only ternary expression is ?:
     if (expr.operator1.type == TokenType.QUESTION && expr.operator2.type == TokenType.COLON) {
-      if (boolValue as bool) {
-        // [boolValue] true, return left.
-        return left;
-      } else {
-        // [boolValue] false, return right.
-        return right;
-      }
+      return _isTruthy(boolValue) ? left : right;
     }
 
     // Unreachable.
@@ -75,11 +81,17 @@ class Interpreter implements ExprVisitor<Object> {
       case TokenType.BANG:
         return !_isTruthy(right);
       case TokenType.MINUS:
+        _checkNumberOperands(expr.operator, [right]);
         return -(right as double);
       default:
         // Unreachable
         return null;
     }
+  }
+
+  void _checkNumberOperands(Token operator, List<Object> operands) {
+    if (operands.every((e) => e is double)) return;
+    throw new RuntimeError(operator, "Operand(s) must be a number.");
   }
 
   Object _evaluate(Expr expr) => expr.accept(this);
