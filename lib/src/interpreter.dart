@@ -1,19 +1,20 @@
 import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
 import 'package:dartox/src/runtime_error.dart';
+import 'package:dartox/src/statement.dart';
 import 'package:dartox/src/token.dart';
 import 'package:dartox/src/token_type.dart';
 
-class Interpreter implements ExprVisitor<Object> {
+class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   final ErrorReporter errorReporter;
 
   Interpreter(this.errorReporter);
 
-  void interpret(Expr expr) {
+  void interpret(List<Statement> statements) {
     try {
-      // Evaluates syntax tree and shows it to user.
-      Object value = _evaluate(expr);
-      print(_stringify(value));
+      for (Statement statement in statements) {
+        _execute(statement);
+      }
     } catch (e) {
       errorReporter.runtimeError(e);
     }
@@ -112,12 +113,24 @@ class Interpreter implements ExprVisitor<Object> {
     }
   }
 
+  @override
+  void visitExpressionStatement(Expression statement) =>
+      _evaluate(statement.expression);
+
+  @override
+  void visitPrintStatement(Print statement) =>
+      print(_stringify(_evaluate(statement.expression)));
+
   void _checkNumberOperands(Token operator, List<Object> operands) {
     if (operands.every((e) => e is double)) return;
     throw new RuntimeError(operator, "Operand(s) must be a number.");
   }
 
+  /// Determines the value of the expression given.
   Object _evaluate(Expr expr) => expr.accept(this);
+
+  /// Execute the behaviour of the statement given.
+  void _execute(Statement statement) => statement.accept(this);
 
   bool _isTruthy(Object object) {
     if (object == null) return false;

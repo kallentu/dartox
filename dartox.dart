@@ -5,6 +5,7 @@ import 'package:dartox/src/scanner.dart';
 import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
 import 'package:dartox/src/parser.dart';
+import 'package:dartox/src/statement.dart';
 import 'package:dartox/src/ast_printer.dart';
 import 'package:dartox/src/interpreter.dart';
 
@@ -44,13 +45,13 @@ void _run(String source) {
   Scanner scanner = Scanner(source);
   List<Token> tokens = scanner.scanTokens();
   Parser parser = Parser(tokens, errorReporter);
-  Expr expression = parser.parse();
+  List<Statement> statements = parser.parse();
 
   // Stop if there is a syntax error.
   if (errorReporter.hadError) return;
 
   // Interpret the AST created.
-  interpreter.interpret(expression);
+  interpreter.interpret(statements);
 }
 
 /// Debug method to print all tokens.

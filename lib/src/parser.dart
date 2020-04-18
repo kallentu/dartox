@@ -1,5 +1,6 @@
 import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
+import 'package:dartox/src/statement.dart';
 import 'package:dartox/src/token.dart';
 import 'package:dartox/src/token_type.dart';
 
@@ -10,13 +11,29 @@ class Parser {
 
   Parser(this._tokens, this.errorReporter);
 
-  Expr parse() {
-    try {
-      return _ternary();
-    } catch (e) {
-      // Syntax error, no usable syntax tree.
-      return null;
+  List<Statement> parse() {
+    List<Statement> statements = List();
+    while (!_isAtEnd()) {
+      statements.add(_statement());
     }
+    return statements;
+  }
+
+  Statement _statement() {
+    if (_match([TokenType.PRINT])) return _printStatement();
+    return _expressionStatement();
+  }
+
+  Statement _printStatement() {
+    Expr value = _ternary();
+    _consume(TokenType.SEMICOLON, "Expected ';' after value.");
+    return Print(value);
+  }
+
+  Statement _expressionStatement() {
+    Expr expr = _ternary();
+    _consume(TokenType.SEMICOLON, "Expected ';' after expression.");
+    return Expression(expr);
   }
 
   /// ternary → (commaExpression "?" commaExpression ":")* ternary
