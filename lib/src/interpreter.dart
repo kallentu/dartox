@@ -57,8 +57,11 @@ class Interpreter implements ExprVisitor<Object> {
           return _stringify(left) + _stringify(right);
         }
         // Unreachable for values of PLUS.
-        throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
+        throw new RuntimeError(
+            expr.operator, "Operands must be two numbers or two strings.");
       case TokenType.SLASH:
+        if (right == 0)
+          throw new RuntimeError(expr.operator, "Divisor cannot be zero.");
         return (left as double) / (right as double);
       case TokenType.STAR:
         return (left as double) * (right as double);
@@ -84,7 +87,8 @@ class Interpreter implements ExprVisitor<Object> {
     _checkNumberOperands(expr.operator2, [left, right]);
 
     // Only ternary expression is ?:
-    if (expr.operator1.type == TokenType.QUESTION && expr.operator2.type == TokenType.COLON) {
+    if (expr.operator1.type == TokenType.QUESTION &&
+        expr.operator2.type == TokenType.COLON) {
       return _isTruthy(boolValue) ? left : right;
     }
 
@@ -96,7 +100,7 @@ class Interpreter implements ExprVisitor<Object> {
   Object visitUnaryExpr(Unary expr) {
     Object right = _evaluate(expr.right);
 
-    switch(expr.operator.type) {
+    switch (expr.operator.type) {
       case TokenType.BANG:
         return !_isTruthy(right);
       case TokenType.MINUS:
