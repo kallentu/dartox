@@ -51,6 +51,10 @@ class Interpreter implements ExprVisitor<Object> {
           return left + right;
         } else if (left is String && right is String) {
           return left + right;
+        } else if (left is String || right is String) {
+          // Additional case where if either operand is a string,
+          // convert both to a string and concatenate.
+          return _stringify(left) + _stringify(right);
         }
         // Unreachable for values of PLUS.
         throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
