@@ -1,3 +1,4 @@
+import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
 import 'package:dartox/src/runtime_error.dart';
@@ -6,9 +7,10 @@ import 'package:dartox/src/token.dart';
 import 'package:dartox/src/token_type.dart';
 
 class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
-  final ErrorReporter errorReporter;
+  final ErrorReporter _errorReporter;
+  final Environment _environment = Environment();
 
-  Interpreter(this.errorReporter);
+  Interpreter(this._errorReporter);
 
   void interpret(List<Statement> statements) {
     try {
@@ -16,7 +18,7 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
         _execute(statement);
       }
     } catch (e) {
-      errorReporter.runtimeError(e);
+      if (e is RuntimeError) _errorReporter.runtimeError(e);
     }
   }
 
@@ -120,6 +122,17 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   @override
   void visitPrintStatement(Print statement) =>
       print(_stringify(_evaluate(statement.expression)));
+
+  @override
+  void visitVarStatement(Var statement) {
+    // Evaluate the initial value and assign it in the environment.
+    Object value =
+        statement.initializer != null ? _evaluate(statement.initializer) : null;
+    _environment.define(statement.name.lexeme, value);
+  }
+
+  @override
+  Object visitVariableExpr(Variable expr) => _environment.get(expr.name);
 
   void _checkNumberOperands(Token operator, List<Object> operands) {
     if (operands.every((e) => e is double)) return;

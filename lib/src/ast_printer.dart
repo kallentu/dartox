@@ -28,6 +28,9 @@ class AstPrinter extends ExprVisitor<String> {
   String visitUnaryExpr(Unary expr) =>
       _parenthesize([expr.operator.lexeme], [expr.right]);
 
+  @override
+  String visitVariableExpr(Variable expr) => expr.name.toString();
+
   String _parenthesize(List<String> names, List<Expr> expressions) {
     String contents = "(";
     for (String name in names) {

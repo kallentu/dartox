@@ -22,11 +22,18 @@ main(List<String> args) {
     "Ternary  : Expr value, Token operator1, Expr left, Token operator2, Expr right",
     "Grouping : Expr expression",
     "Literal  : Object value",
-    "Unary    : Token operator, Expr right"
+    "Unary    : Token operator, Expr right",
+    "Variable : Token name"
   ]);
 
-  _defineAst(outputDir, "Statement", ["package:dartox/src/expr.dart"],
-      ["Expression : Expr expression", "Print : Expr expression"]);
+  _defineAst(outputDir, "Statement", [
+    "package:dartox/src/expr.dart",
+    "package:dartox/src/token.dart"
+  ], [
+    "Expression : Expr expression",
+    "Print      : Expr expression",
+    "Var        : Token name, Expr initializer"
+  ]);
 }
 
 void _defineAst(String outputDir, String baseName, List<String> imports,

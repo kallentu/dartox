@@ -14,26 +14,59 @@ class Parser {
   List<Statement> parse() {
     List<Statement> statements = List();
     while (!_isAtEnd()) {
-      statements.add(_statement());
+      statements.add(_declaration());
     }
     return statements;
   }
 
+  /// declaration → varDecl
+  ///            | statement
+  Statement _declaration() {
+    try {
+      // Check if there is a declaration, otherwise move to (higher precedent)
+      // statement.
+      if (_match([TokenType.VAR])) return _varDeclaration();
+      return _statement();
+    } catch (e) {
+      // Error recovery, try to parse the next valid statement/declaration.
+      _synchronize();
+      return null;
+    }
+  }
+
+  /// varDecl → "var" IDENTIFIER ( "=" expression )? ";"
+  Statement _varDeclaration() {
+    Token name = _consume(TokenType.IDENTIFIER, "Expected variable name.");
+
+    // Initial value for the variable.
+    Expr initializer = null;
+    if (_match([TokenType.EQUAL])) {
+      initializer = _ternary();
+    }
+
+    _consume(TokenType.SEMICOLON, "Expected ';' after variable declaration.");
+    return Var(name, initializer);
+  }
+
+  /// statement   → exprStmt
+  ///            | printStmt
   Statement _statement() {
     if (_match([TokenType.PRINT])) return _printStatement();
     return _expressionStatement();
   }
 
-  Statement _printStatement() {
-    Expr value = _ternary();
-    _consume(TokenType.SEMICOLON, "Expected ';' after value.");
-    return Print(value);
-  }
-
+  /// exprStmt  → expression ";"
   Statement _expressionStatement() {
     Expr expr = _ternary();
     _consume(TokenType.SEMICOLON, "Expected ';' after expression.");
     return Expression(expr);
+  }
+
+  /// printStmt → "print" expression ";"
+  Statement _printStatement() {
+    Expr value = _ternary();
+    _consume(TokenType.SEMICOLON, "Expected ';' after value.");
+    return Print(value);
   }
 
   /// ternary → (commaExpression "?" commaExpression ":")* ternary
@@ -212,6 +245,11 @@ class Parser {
 
     if (_match([TokenType.NUMBER, TokenType.STRING])) {
       return Literal(_previous().literal);
+    }
+
+    // Using a previously declared variable.
+    if (_match([TokenType.IDENTIFIER])) {
+      return Variable(_previous());
     }
 
     if (_match([TokenType.LEFT_PAREN])) {
