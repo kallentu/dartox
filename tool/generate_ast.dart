@@ -24,6 +24,9 @@ main(List<String> args) {
     "Literal  : Object value",
     "Unary    : Token operator, Expr right"
   ]);
+
+  _defineAst(outputDir, "Statement", ["package:dartox/src/expr.dart"],
+      ["Expression : Expr expression", "Print : Expr expression"]);
 }
 
 void _defineAst(String outputDir, String baseName, List<String> imports,
