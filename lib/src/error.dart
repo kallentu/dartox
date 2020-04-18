@@ -1,9 +1,10 @@
-// TODO: Add error type class.
+import 'package:dartox/src/runtime_error.dart';
 import 'package:dartox/src/token.dart';
 import 'package:dartox/src/token_type.dart';
 
 class ErrorReporter {
   bool hadError = false;
+  bool hadRuntimeError = false;
 
   void error(int line, String message) {
     _report(line, "", message);
@@ -16,6 +17,11 @@ class ErrorReporter {
     } else {
       _report(token.line, "at '" + token.lexeme + "'", message);
     }
+  }
+
+  void runtimeError(RuntimeError error) {
+    print(error.toString() + "\n[line " + error.token.line.toString() + "]");
+    hadRuntimeError = true;
   }
 
   void clear() => hadError = false;

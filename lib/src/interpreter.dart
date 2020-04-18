@@ -1,9 +1,24 @@
+import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
 import 'package:dartox/src/runtime_error.dart';
 import 'package:dartox/src/token.dart';
 import 'package:dartox/src/token_type.dart';
 
 class Interpreter implements ExprVisitor<Object> {
+  final ErrorReporter errorReporter;
+
+  Interpreter(this.errorReporter);
+
+  void interpret(Expr expr) {
+    try {
+      // Evaluates syntax tree and shows it to user.
+      Object value = _evaluate(expr);
+      print(_stringify(value));
+    } catch (e) {
+      errorReporter.runtimeError(e);
+    }
+  }
+
   @override
   Object visitBinaryExpr(Binary expr) {
     Object left = _evaluate(expr.left);
@@ -106,5 +121,20 @@ class Interpreter implements ExprVisitor<Object> {
     // nil is only equal to nil
     if (a == null && b == null) return true;
     return a == b;
+  }
+
+  String _stringify(Object object) {
+    if (object == null) return "nil";
+
+    // Hack. Work around the adding of ".0" for integer doubles.
+    if (object is double) {
+      String text = object.toString();
+      if (text.endsWith(".0")) {
+        text = text.substring(0, text.length - 2);
+      }
+      return text;
+    }
+
+    return object.toString();
   }
 }

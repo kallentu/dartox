@@ -6,8 +6,10 @@ import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
 import 'package:dartox/src/parser.dart';
 import 'package:dartox/src/ast_printer.dart';
+import 'package:dartox/src/interpreter.dart';
 
 final ErrorReporter errorReporter = ErrorReporter();
+final Interpreter interpreter = Interpreter(errorReporter);
 
 main(List<String> args) {
   final ArgParser argParser = ArgParser()
@@ -21,6 +23,7 @@ main(List<String> args) {
   } else if (argResults.arguments.length == 1) {
     _run(argResults['file']);
     if (errorReporter.hadError) exit(65);
+    if (errorReporter.hadRuntimeError) exit(70);
   } else {
     // Run interactive prompt
     _runPrompt();
@@ -43,12 +46,11 @@ void _run(String source) {
   Parser parser = Parser(tokens, errorReporter);
   Expr expression = parser.parse();
 
-  _printTokens(tokens);
-
   // Stop if there is a syntax error.
   if (errorReporter.hadError) return;
 
-  print(AstPrinter().print(expression));
+  // Interpret the AST created.
+  interpreter.interpret(expression);
 }
 
 /// Debug method to print all tokens.
@@ -56,4 +58,9 @@ void _printTokens(List<Token> tokens) {
   for (Token token in tokens) {
     print(token);
   }
+}
+
+/// Debug method to print the valid AST.
+void _printAst(Expr expr) {
+  print(AstPrinter().print(expr));
 }
