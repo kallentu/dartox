@@ -21,6 +21,10 @@ class Environment {
   /// declarations difficult.
   Object get(Token name) {
     if (values.containsKey(name.lexeme)) {
+      // Runtime error to access variable that has not been initialized or
+      // assigned to.
+      if (values[name.lexeme] == null)
+        throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
       return values[name.lexeme];
     }
 
