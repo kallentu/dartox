@@ -18,6 +18,7 @@ main(List<String> args) {
   _defineAst(outputDir, "Expr", [
     "package:dartox/src/token.dart"
   ], [
+    "Assign   : Token name, Expr value",
     "Binary   : Expr left, Token operator, Expr right",
     "Ternary  : Expr value, Token operator1, Expr left, Token operator2, Expr right",
     "Grouping : Expr expression",

@@ -111,8 +111,32 @@ class Parser {
     return expr;
   }
 
-  /// expression → equality
-  Expr _expression() => _equality();
+  /// expression → assignment
+  Expr _expression() => _assignment();
+
+  /// assignment → IDENTIFIER "=" assignment
+  ///           | equality
+  Expr _assignment() {
+    // Parse left hand side. If it is actually assignment, this still works
+    // since it is still an expression.
+    Expr expr = _equality();
+
+    // If we find =, parse the right hand side.
+    if (_match([TokenType.EQUAL])) {
+      Token equals = _previous();
+      Expr value = _assignment();
+
+      // Confirm valid assignment target and convert to l-value representation.
+      if (expr is Variable) {
+        Token name = expr.name;
+        return Assign(name, value);
+      } else {
+        _error(equals, "Invalid assignment target.");
+      }
+    }
+
+    return expr;
+  }
 
   /// equality → comparison ( ( "!=" | "==" ) comparison )*
   ///         | ( "!=" | "==" ) comparison (as error production)

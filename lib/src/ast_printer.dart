@@ -31,6 +31,10 @@ class AstPrinter extends ExprVisitor<String> {
   @override
   String visitVariableExpr(Variable expr) => expr.name.toString();
 
+  @override
+  String visitAssignExpr(Assign expr) =>
+      expr.name.toString() + " = " + expr.value.toString();
+
   String _parenthesize(List<String> names, List<Expr> expressions) {
     String contents = "(";
     for (String name in names) {

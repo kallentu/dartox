@@ -134,6 +134,13 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   @override
   Object visitVariableExpr(Variable expr) => _environment.get(expr.name);
 
+  @override
+  Object visitAssignExpr(Assign expr) {
+    Object value = _evaluate(expr.value);
+    _environment.assign(expr.name, value);
+    return value;
+  }
+
   void _checkNumberOperands(Token operator, List<Object> operands) {
     if (operands.every((e) => e is double)) return;
     throw new RuntimeError(operator, "Operand(s) must be a number.");

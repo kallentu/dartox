@@ -15,9 +15,21 @@ class Environment {
       return values[name.lexeme];
     }
 
-    throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+    throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
   }
 
+  /// Updates value of the variable.
+  /// Does not create a new variable in the map.
+  void assign(Token name, Object value) {
+    if (values.containsKey(name.lexeme)) {
+      values[name.lexeme] = value;
+      return;
+    } else {
+      throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+    }
+  }
+
+  /// Adds a new variable to the map.
   void define(String name, Object value) =>
       values.putIfAbsent(name, () => value);
 }
