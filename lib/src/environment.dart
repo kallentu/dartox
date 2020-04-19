@@ -4,8 +4,17 @@ import 'package:dartox/src/runtime_error.dart';
 import 'package:dartox/src/token.dart';
 
 class Environment {
+  /// Reference to its enclosing environment, [null] if there is none.
+  final Environment enclosing;
+
   /// Stores identifiers and their corresponding values.
   final HashMap<String, Object> values = HashMap();
+
+  /// Global scope environment.
+  Environment() : enclosing = null;
+
+  /// Creates local scope nested inside outer enclosing scope.
+  Environment.withEnclosing(this.enclosing);
 
   /// Returns value bound to the variable found by token lexeme.
   /// Otherwise, we make it a runtime time error to avoid making recursive
@@ -15,6 +24,9 @@ class Environment {
       return values[name.lexeme];
     }
 
+    // If not found in this scope, try an enclosing one.
+    if (enclosing != null) return enclosing.get(name);
+
     throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
   }
 
@@ -23,7 +35,9 @@ class Environment {
   void assign(Token name, Object value) {
     if (values.containsKey(name.lexeme)) {
       values[name.lexeme] = value;
-      return;
+    } else if (enclosing != null) {
+      // If we cannot find variable in this environment, try the enclosing one.
+      enclosing.assign(name, value);
     } else {
       throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
     }

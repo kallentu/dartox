@@ -50,12 +50,14 @@ class Parser {
 
   /// statement   → exprStmt
   ///            | printStmt
+  ///            | block
   Statement _statement() {
     if (_match([TokenType.PRINT])) return _printStatement();
+    if (_match([TokenType.LEFT_BRACE])) return Block(_block());
     return _expressionStatement();
   }
 
-  /// exprStmt  → expression ";"
+  /// exprStmt → expression ";"
   Statement _expressionStatement() {
     Expr expr = _ternary();
     _consume(TokenType.SEMICOLON, "Expected ';' after expression.");
@@ -67,6 +69,19 @@ class Parser {
     Expr value = _ternary();
     _consume(TokenType.SEMICOLON, "Expected ';' after value.");
     return Print(value);
+  }
+
+  /// block → "{" declaration* "}"
+  List<Statement> _block() {
+    List<Statement> statements = List();
+
+    // Add each declaration until we hit the end of the block.
+    while (!_check(TokenType.RIGHT_BRACE) && !_isAtEnd()) {
+      statements.add(_declaration());
+    }
+
+    _consume(TokenType.RIGHT_BRACE, "Expected '}' after block.");
+    return statements;
   }
 
   /// ternary → (commaExpression "?" commaExpression ":")* ternary

@@ -8,7 +8,7 @@ import 'package:dartox/src/token_type.dart';
 
 class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   final ErrorReporter _errorReporter;
-  final Environment _environment = Environment();
+  Environment _environment = Environment();
 
   Interpreter(this._errorReporter);
 
@@ -141,6 +141,10 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
     return value;
   }
 
+  @override
+  void visitBlockStatement(Block statement) => _executeBlock(
+      statement.statements, Environment.withEnclosing(_environment));
+
   void _checkNumberOperands(Token operator, List<Object> operands) {
     if (operands.every((e) => e is double)) return;
     throw new RuntimeError(operator, "Operand(s) must be a number.");
@@ -151,6 +155,19 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
   /// Execute the behaviour of the statement given.
   void _execute(Statement statement) => statement.accept(this);
+
+  /// Updates to execute with the current environment, innermost scope.
+  void _executeBlock(List<Statement> statements, Environment environment) {
+    Environment previous = _environment;
+    try {
+      _environment = environment;
+      for (Statement statement in statements) {
+        _execute(statement);
+      }
+    } finally {
+      _environment = previous;
+    }
+  }
 
   bool _isTruthy(Object object) {
     if (object == null) return false;

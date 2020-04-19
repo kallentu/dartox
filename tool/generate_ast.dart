@@ -31,6 +31,7 @@ main(List<String> args) {
     "package:dartox/src/expr.dart",
     "package:dartox/src/token.dart"
   ], [
+    "Block      : List<Statement> statements",
     "Expression : Expr expression",
     "Print      : Expr expression",
     "Var        : Token name, Expr initializer"
