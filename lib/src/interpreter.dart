@@ -152,6 +152,13 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   }
 
   @override
+  void visitWhileStatement(While statement) {
+    while (_isTruthy(_evaluate(statement.condition))) {
+      _execute(statement.body);
+    }
+  }
+
+  @override
   Object visitVariableExpr(Variable expr) => _environment.get(expr.name);
 
   @override

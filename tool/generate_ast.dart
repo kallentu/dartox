@@ -36,7 +36,8 @@ main(List<String> args) {
     "Expression : Expr expression",
     "If         : Expr condition, Statement thenBranch, Statement elseBranch",
     "Print      : Expr expression",
-    "Var        : Token name, Expr initializer"
+    "Var        : Token name, Expr initializer",
+    "While      : Expr condition, Statement body"
   ]);
 }
 

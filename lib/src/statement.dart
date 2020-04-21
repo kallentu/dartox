@@ -11,6 +11,7 @@ abstract class StatementVisitor<R> {
   R visitIfStatement(If statement);
   R visitPrintStatement(Print statement);
   R visitVarStatement(Var statement);
+  R visitWhileStatement(While statement);
 }
 
 class Block extends Statement {
@@ -58,5 +59,15 @@ class Var extends Statement {
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitVarStatement(this);
+  }
+}
+
+class While extends Statement {
+  final Expr condition;
+  final Statement body;
+  While(this.condition, this.body);
+  @override
+  R accept<R>(StatementVisitor<R> visitor) {
+    return visitor.visitWhileStatement(this);
   }
 }

@@ -55,6 +55,7 @@ class Parser {
   Statement _statement() {
     if (_match([TokenType.IF])) return _ifStatement();
     if (_match([TokenType.PRINT])) return _printStatement();
+    if (_match([TokenType.WHILE])) return _whileStatement();
     if (_match([TokenType.LEFT_BRACE])) return Block(_block());
     return _expressionStatement();
   }
@@ -87,6 +88,16 @@ class Parser {
     Expr value = _ternary();
     _consume(TokenType.SEMICOLON, "Expected ';' after value.");
     return Print(value);
+  }
+
+  /// whileStmt → "while" "(" expression ")" statement
+  Statement _whileStatement() {
+    _consume(TokenType.LEFT_PAREN, "Expected '(' after 'while'.");
+    Expr condition = _expression();
+    _consume(TokenType.RIGHT_PAREN, "Expected ')' after condition.");
+    Statement body = _statement();
+
+    return While(condition, body);
   }
 
   /// block → "{" declaration* "}"
