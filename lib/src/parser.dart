@@ -49,15 +49,64 @@ class Parser {
   }
 
   /// statement   → exprStmt
+  ///            | forStmt
   ///            | ifStmt
   ///            | printStmt
+  ///            | whileStmt
   ///            | block
   Statement _statement() {
+    if (_match([TokenType.FOR])) return _forStatement();
     if (_match([TokenType.IF])) return _ifStatement();
     if (_match([TokenType.PRINT])) return _printStatement();
     if (_match([TokenType.WHILE])) return _whileStatement();
     if (_match([TokenType.LEFT_BRACE])) return Block(_block());
     return _expressionStatement();
+  }
+
+  /// forStmt → "for" "(" ( varDecl | exprStmt | ";" )
+  ///                    expression? ";"
+  ///                    expression? ")" statement
+  /// For loops are syntactic sugar for while loops.
+  Statement _forStatement() {
+    _consume(TokenType.LEFT_PAREN, "Expected '(' after 'for'.");
+
+    // First clause being the initializer.
+    // Either omitted, new variable or assignment.
+    Statement initializer;
+    if (_match([TokenType.SEMICOLON])) {
+      initializer = null;
+    } else if (_match([TokenType.VAR])) {
+      initializer = _varDeclaration();
+    } else {
+      initializer = _expressionStatement();
+    }
+
+    Expr condition = null;
+    if (!_check(TokenType.SEMICOLON)) {
+      condition = _expression();
+    }
+    _consume(TokenType.SEMICOLON, "Expected ';' after loop condition.");
+
+    Expr increment = null;
+    if (!_check(TokenType.RIGHT_PAREN)) {
+      increment = _expression();
+    }
+    _consume(TokenType.RIGHT_PAREN, "Expected ')' after for clauses.");
+
+    // Initializer will run first before loop.
+    Statement body = _statement();
+
+    // Add increment statement to the end of the body.
+    if (increment != null) {
+      body = Block([body, Expression(increment)]);
+    }
+
+    // If there is no condition, the for loop will always run.
+    if (condition == null) condition = Literal(true);
+
+    // Otherwise, use the condition given.
+    body = While(condition, body);
+    return body;
   }
 
   /// ifStmt → "if" "(" expression ")" statement ( "else" statement )?
