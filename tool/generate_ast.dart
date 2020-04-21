@@ -23,6 +23,7 @@ main(List<String> args) {
     "Ternary  : Expr value, Token operator1, Expr left, Token operator2, Expr right",
     "Grouping : Expr expression",
     "Literal  : Object value",
+    "Logical  : Expr left, Token operator, Expr right",
     "Unary    : Token operator, Expr right",
     "Variable : Token name"
   ]);

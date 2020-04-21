@@ -81,6 +81,22 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   Object visitLiteralExpr(Literal expr) => expr.value;
 
   @override
+  Object visitLogicalExpr(Logical expr) {
+    Object left = _evaluate(expr.left);
+
+    if (expr.operator.type == TokenType.OR) {
+      // Return true immediately, breaks OR.
+      if (_isTruthy(left)) return left;
+    } else {
+      // TokenType.AND
+      // Return false immediately, breaks AND.
+      if (!_isTruthy(left)) return left;
+    }
+
+    return _evaluate(expr.right);
+  }
+
+  @override
   Object visitTernaryExpr(Ternary expr) {
     // Only ternary expression is ?:
     if (expr.operator1.type == TokenType.QUESTION &&

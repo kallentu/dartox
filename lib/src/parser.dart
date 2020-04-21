@@ -152,7 +152,7 @@ class Parser {
   Expr _assignment() {
     // Parse left hand side. If it is actually assignment, this still works
     // since it is still an expression.
-    Expr expr = _equality();
+    Expr expr = _or();
 
     // If we find =, parse the right hand side.
     if (_match([TokenType.EQUAL])) {
@@ -166,6 +166,32 @@ class Parser {
       } else {
         _error(equals, "Invalid assignment target.");
       }
+    }
+
+    return expr;
+  }
+
+  /// logic_or → logic_and ( "or" logic_and )*
+  Expr _or() {
+    Expr expr = _and();
+
+    while (_match([TokenType.OR])) {
+      Token operator = _previous();
+      Expr right = _and();
+      expr = Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  /// logic_and → equality ( "and" equality )*
+  Expr _and() {
+    Expr expr = _equality();
+
+    while (_match([TokenType.OR])) {
+      Token operator = _previous();
+      Expr right = _equality();
+      expr = Logical(expr, operator, right);
     }
 
     return expr;
