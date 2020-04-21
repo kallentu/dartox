@@ -33,6 +33,7 @@ main(List<String> args) {
   ], [
     "Block      : List<Statement> statements",
     "Expression : Expr expression",
+    "If         : Expr condition, Statement thenBranch, Statement elseBranch",
     "Print      : Expr expression",
     "Var        : Token name, Expr initializer"
   ]);

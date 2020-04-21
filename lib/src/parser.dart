@@ -49,12 +49,30 @@ class Parser {
   }
 
   /// statement   → exprStmt
+  ///            | ifStmt
   ///            | printStmt
   ///            | block
   Statement _statement() {
+    if (_match([TokenType.IF])) return _ifStatement();
     if (_match([TokenType.PRINT])) return _printStatement();
     if (_match([TokenType.LEFT_BRACE])) return Block(_block());
     return _expressionStatement();
+  }
+
+  /// ifStmt → "if" "(" expression ")" statement ( "else" statement )?
+  /// Nested else blocks are bound to nearest if that precedes it.
+  Statement _ifStatement() {
+    _consume(TokenType.LEFT_PAREN, "Expected '(' after 'if'.");
+    Expr condition = _ternary();
+    _consume(TokenType.RIGHT_PAREN, "Expected ')' after if condition.");
+
+    Statement thenBranch = _statement();
+    Statement elseBranch = null;
+    if (_match([TokenType.ELSE])) {
+      elseBranch = _statement();
+    }
+
+    return If(condition, thenBranch, elseBranch);
   }
 
   /// exprStmt → expression ";"

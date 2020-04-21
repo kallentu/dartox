@@ -82,17 +82,12 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
   @override
   Object visitTernaryExpr(Ternary expr) {
-    Object boolValue = _evaluate(expr.value);
-    Object left = _evaluate(expr.left);
-    Object right = _evaluate(expr.right);
-
-    // Pre-runtime checks to prevent runtime errors.
-    _checkNumberOperands(expr.operator2, [left, right]);
-
     // Only ternary expression is ?:
     if (expr.operator1.type == TokenType.QUESTION &&
         expr.operator2.type == TokenType.COLON) {
-      return _isTruthy(boolValue) ? left : right;
+      return _isTruthy(_evaluate(expr.value))
+          ? _evaluate(expr.left)
+          : _evaluate(expr.right);
     }
 
     // Unreachable.
@@ -118,6 +113,15 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   @override
   void visitExpressionStatement(Expression statement) =>
       _evaluate(statement.expression);
+
+  @override
+  void visitIfStatement(If statement) {
+    if (_isTruthy(_evaluate(statement.condition))) {
+      _execute(statement.thenBranch);
+    } else if (statement.elseBranch != null) {
+      _execute(statement.elseBranch);
+    }
+  }
 
   @override
   void visitPrintStatement(Print statement) =>
