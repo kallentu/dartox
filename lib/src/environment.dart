@@ -10,11 +10,38 @@ class Environment {
   /// Stores identifiers and their corresponding values.
   final HashMap<String, Object> values = HashMap();
 
+  /// This environment body is a part of a loop (used for breaks, continues).
+  bool isLoopEnvironment = false;
+
+  /// Booleans for break and continue statements.
+  bool _hasBroken = false;
+  bool _hasContinued = false;
+
   /// Global scope environment.
   Environment() : enclosing = null;
 
   /// Creates local scope nested inside outer enclosing scope.
   Environment.withEnclosing(this.enclosing);
+
+  void setBroken(bool hasBroken) {
+    // Must set break up to closest level of loop.
+    _hasBroken = hasBroken;
+    if (!isLoopEnvironment) {
+      enclosing?.setBroken(hasBroken);
+    }
+  }
+
+  bool isBroken() => _hasBroken;
+
+  void setContinued(bool hasContinued) {
+    // Must set continue up to closest level of loop.
+    _hasContinued = hasContinued;
+    if (!isLoopEnvironment) {
+      enclosing?.setContinued(hasContinued);
+    }
+  }
+
+  bool isContinued() => _hasContinued;
 
   /// Returns value bound to the variable found by token lexeme.
   /// Otherwise, we make it a runtime time error to avoid making recursive

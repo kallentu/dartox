@@ -153,10 +153,52 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
   @override
   void visitWhileStatement(While statement) {
-    while (_isTruthy(_evaluate(statement.condition))) {
+    // Set loop environment to ensure we can break and continue inside this.
+    _environment.isLoopEnvironment = true;
+
+    // Will continue to run until condition is not true or when a break
+    // statement is hit.
+    while (
+        _isTruthy(_evaluate(statement.condition)) && !_environment.isBroken()) {
+      if (_environment.isContinued()) {
+        // Continues only activate once per loop iteration, must reset for next
+        // iteration.
+        _environment.setContinued(false);
+        continue;
+      }
       _execute(statement.body);
     }
   }
+
+  @override
+  void visitForStatement(For statement) {
+    // Set loop environment to ensure we can break and continue inside this.
+    _environment.isLoopEnvironment = true;
+
+    // Will continue to run until condition is not true or when a break
+    // statement is hit.
+    while (
+        _isTruthy(_evaluate(statement.condition)) && !_environment.isBroken()) {
+      if (_environment.isContinued()) {
+        // Continues only activate once per loop iteration, must reset for next
+        // iteration.
+        _environment.setContinued(false);
+        continue;
+      }
+      _execute(statement.body);
+
+      // Increment is separate when we use a break/continue.
+      // We will still execute this.
+      _execute(statement.increment);
+    }
+  }
+
+  @override
+  void visitBreakStatement(Break statement) => _environment.setBroken(true);
+
+  @override
+  void visitContinueStatement(Continue statement) =>
+      _environment.setContinued(true);
 
   @override
   Object visitVariableExpr(Variable expr) => _environment.get(expr.name);
@@ -189,6 +231,14 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
     try {
       _environment = environment;
       for (Statement statement in statements) {
+        // Stop executing other statements if we have a continue/break.
+        if (_environment.isBroken()) {
+          previous.setBroken(true);
+          break;
+        } else if (_environment.isContinued()) {
+          previous.setContinued(true);
+          break;
+        }
         _execute(statement);
       }
     } finally {

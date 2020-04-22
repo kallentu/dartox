@@ -31,7 +31,9 @@ enum TokenType {
 
   // Keywords.
   AND,
+  BREAK,
   CLASS,
+  CONTINUE,
   ELSE,
   FALSE,
   FUN,

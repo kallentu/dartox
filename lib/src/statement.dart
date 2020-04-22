@@ -7,7 +7,10 @@ abstract class Statement {
 
 abstract class StatementVisitor<R> {
   R visitBlockStatement(Block statement);
+  R visitBreakStatement(Break statement);
+  R visitContinueStatement(Continue statement);
   R visitExpressionStatement(Expression statement);
+  R visitForStatement(For statement);
   R visitIfStatement(If statement);
   R visitPrintStatement(Print statement);
   R visitVarStatement(Var statement);
@@ -23,12 +26,39 @@ class Block extends Statement {
   }
 }
 
+class Break extends Statement {
+  Break();
+  @override
+  R accept<R>(StatementVisitor<R> visitor) {
+    return visitor.visitBreakStatement(this);
+  }
+}
+
+class Continue extends Statement {
+  Continue();
+  @override
+  R accept<R>(StatementVisitor<R> visitor) {
+    return visitor.visitContinueStatement(this);
+  }
+}
+
 class Expression extends Statement {
   final Expr expression;
   Expression(this.expression);
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitExpressionStatement(this);
+  }
+}
+
+class For extends Statement {
+  final Expr condition;
+  final Statement body;
+  final Expression increment;
+  For(this.condition, this.body, this.increment);
+  @override
+  R accept<R>(StatementVisitor<R> visitor) {
+    return visitor.visitForStatement(this);
   }
 }
 

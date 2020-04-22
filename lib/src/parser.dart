@@ -9,6 +9,9 @@ class Parser {
   final ErrorReporter errorReporter;
   int _current = 0;
 
+  /// [true] if parser is currently parsing statements in a loop body.
+  bool _inLoop = false;
+
   Parser(this._tokens, this.errorReporter);
 
   List<Statement> parse() {
@@ -54,11 +57,15 @@ class Parser {
   ///            | printStmt
   ///            | whileStmt
   ///            | block
+  ///            | breakStmt
+  ///            | continueStmt
   Statement _statement() {
     if (_match([TokenType.FOR])) return _forStatement();
     if (_match([TokenType.IF])) return _ifStatement();
     if (_match([TokenType.PRINT])) return _printStatement();
     if (_match([TokenType.WHILE])) return _whileStatement();
+    if (_match([TokenType.BREAK])) return _breakStatement();
+    if (_match([TokenType.CONTINUE])) return _continueStatement();
     if (_match([TokenType.LEFT_BRACE])) return Block(_block());
     return _expressionStatement();
   }
@@ -93,19 +100,24 @@ class Parser {
     }
     _consume(TokenType.RIGHT_PAREN, "Expected ')' after for clauses.");
 
-    // Initializer will run first before loop.
+    // Ensure that any breaks/continues will be in a loop only.
+    _inLoop = true;
     Statement body = _statement();
-
-    // Add increment statement to the end of the body.
-    if (increment != null) {
-      body = Block([body, Expression(increment)]);
-    }
+    _inLoop = false;
 
     // If there is no condition, the for loop will always run.
     if (condition == null) condition = Literal(true);
 
     // Otherwise, use the condition given.
-    body = While(condition, body);
+    // Also, add increment statement for break/continue usage.
+    body = For(condition, body, Expression(increment));
+
+    // Initializer will run first before loop.
+    // Assignment or variable declaration before the body is run.
+    if (initializer != null) {
+      body = Block([initializer, body]);
+    }
+
     return body;
   }
 
@@ -139,12 +151,37 @@ class Parser {
     return Print(value);
   }
 
+  /// breakStmt → "break" ";"
+  Statement _breakStatement() {
+    // Ensure that we only allow break syntax inside a loop.
+    if (!_inLoop) {
+      _error(_previous(), "Break statements must be in a loop.");
+    }
+
+    _consume(TokenType.SEMICOLON, "Expected ';' after break.");
+    return Break();
+  }
+
+  /// continueStmt → "continue" ";"
+  Statement _continueStatement() {
+    // Ensure that we only allow continue syntax inside a loop.
+    if (!_inLoop) {
+      _error(_previous(), "Continue statements must be in a loop.");
+    }
+
+    _consume(TokenType.SEMICOLON, "Expected ';' after continue.");
+    return Continue();
+  }
+
   /// whileStmt → "while" "(" expression ")" statement
   Statement _whileStatement() {
     _consume(TokenType.LEFT_PAREN, "Expected '(' after 'while'.");
     Expr condition = _expression();
     _consume(TokenType.RIGHT_PAREN, "Expected ')' after condition.");
+    // Ensure that any breaks/continues will be in a loop only.
+    _inLoop = true;
     Statement body = _statement();
+    _inLoop = false;
 
     return While(condition, body);
   }

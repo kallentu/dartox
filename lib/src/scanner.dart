@@ -20,7 +20,9 @@ class Scanner {
   Scanner(this._source) {
     // Initialize the static keywords.
     _keywords.putIfAbsent("and", () => TokenType.AND);
+    _keywords.putIfAbsent("break", () => TokenType.BREAK);
     _keywords.putIfAbsent("class", () => TokenType.CLASS);
+    _keywords.putIfAbsent("continue", () => TokenType.CONTINUE);
     _keywords.putIfAbsent("else", () => TokenType.ELSE);
     _keywords.putIfAbsent("false", () => TokenType.FALSE);
     _keywords.putIfAbsent("for", () => TokenType.FOR);

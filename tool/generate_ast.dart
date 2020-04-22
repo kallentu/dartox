@@ -33,7 +33,10 @@ main(List<String> args) {
     "package:dartox/src/token.dart"
   ], [
     "Block      : List<Statement> statements",
+    "Break      :",
+    "Continue   :",
     "Expression : Expr expression",
+    "For        : Expr condition, Statement body, Expression increment",
     "If         : Expr condition, Statement thenBranch, Statement elseBranch",
     "Print      : Expr expression",
     "Var        : Token name, Expr initializer",
@@ -109,12 +112,19 @@ String _defineType(String baseName, String className, String fieldList) {
   // Fields
   List<String> fields = fieldList.split(", ");
   for (String field in fields) {
+    // Hack: Less than 2 means the field is empty.
+    if (field.length < 2) continue;
+
     contents += "  final " + field + ";\n";
   }
 
   // Constructor
   contents += "  " + className + "(";
   for (int i = 0; i < fields.length; i++) {
+    // Hack: Less than 2 means the field is empty.
+    List<String> field = fields[i].split(" ");
+    if (field.length < 2) continue;
+
     String name = fields[i].split(" ")[1];
     contents += "this." + name;
 
