@@ -22,12 +22,14 @@ class Parser {
     return statements;
   }
 
-  /// declaration → varDecl
+  /// declaration → funDecl
+  ///            | varDecl
   ///            | statement
   Statement _declaration() {
     try {
       // Check if there is a declaration, otherwise move to (higher precedent)
       // statement.
+      if (_match([TokenType.FUN])) return _function("function");
       if (_match([TokenType.VAR])) return _varDeclaration();
       return _statement();
     } catch (e) {
@@ -35,6 +37,35 @@ class Parser {
       _synchronize();
       return null;
     }
+  }
+
+  /// funDecl  → "fun" function
+  /// function → IDENTIFIER "(" parameters? ")" block
+  /// parameters → IDENTIFIER ( "," IDENTIFIER )*
+  Function _function(String kind) {
+    Token name = _consume(TokenType.IDENTIFIER, "Expected " + kind + " name.");
+
+    // Parse the arguments.
+    _consume(TokenType.LEFT_PAREN, "Expected '(' after " + kind + " name.");
+    List<Token> parameters = List();
+    if (!_check(TokenType.RIGHT_PAREN)) {
+      do {
+        // Parameter length for functions.
+        if (parameters.length >= 255) {
+          _error(_peek(), "Cannot have more than 255 parameters.");
+        }
+
+        parameters
+            .add(_consume(TokenType.IDENTIFIER, "Expected parameter name."));
+      } while (_match([TokenType.COMMA]));
+    }
+    _consume(TokenType.RIGHT_PAREN, "Expected ')' after parameters.");
+
+    // Parse the block.
+    _consume(TokenType.LEFT_BRACE, "Expected '{' before " + kind + " body.");
+    List<Statement> body = _block();
+
+    return Function(name, parameters, body);
   }
 
   /// varDecl → "var" IDENTIFIER ( "=" expression )? ";"

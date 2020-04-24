@@ -10,6 +10,7 @@ abstract class StatementVisitor<R> {
   R visitBreakStatement(Break statement);
   R visitContinueStatement(Continue statement);
   R visitExpressionStatement(Expression statement);
+  R visitFunctionStatement(Function statement);
   R visitForStatement(For statement);
   R visitIfStatement(If statement);
   R visitPrintStatement(Print statement);
@@ -48,6 +49,17 @@ class Expression extends Statement {
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitExpressionStatement(this);
+  }
+}
+
+class Function extends Statement {
+  final Token name;
+  final List<Token> params;
+  final List<Statement> body;
+  Function(this.name, this.params, this.body);
+  @override
+  R accept<R>(StatementVisitor<R> visitor) {
+    return visitor.visitFunctionStatement(this);
   }
 }
 

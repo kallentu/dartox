@@ -1,4 +1,5 @@
 import 'package:dartox/src/dartox_callable.dart';
+import 'package:dartox/src/dartox_function.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
@@ -11,12 +12,13 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   final ErrorReporter _errorReporter;
 
   /// The outermost global environment.
-  static final Environment globals = Environment();
+  final Environment globals = Environment();
 
   /// The current environment.
-  Environment _environment = globals;
+  Environment _environment;
 
   Interpreter(this._errorReporter) {
+    _environment = globals;
     globals.define("clock", ClockCallable());
   }
 
@@ -167,6 +169,10 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
       _evaluate(statement.expression);
 
   @override
+  void visitFunctionStatement(Function statement) =>
+      _environment.define(statement.name.lexeme, DartoxFunction(statement));
+
+  @override
   void visitIfStatement(If statement) {
     if (_isTruthy(_evaluate(statement.condition))) {
       _execute(statement.thenBranch);
@@ -247,7 +253,7 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   }
 
   @override
-  void visitBlockStatement(Block statement) => _executeBlock(
+  void visitBlockStatement(Block statement) => executeBlock(
       statement.statements, Environment.withEnclosing(_environment));
 
   void _checkNumberOperands(Token operator, List<Object> operands) {
@@ -262,7 +268,7 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   void _execute(Statement statement) => statement.accept(this);
 
   /// Updates to execute with the current environment, innermost scope.
-  void _executeBlock(List<Statement> statements, Environment environment) {
+  void executeBlock(List<Statement> statements, Environment environment) {
     Environment previous = _environment;
     try {
       _environment = environment;

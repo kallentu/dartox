@@ -37,6 +37,7 @@ main(List<String> args) {
     "Break      :",
     "Continue   :",
     "Expression : Expr expression",
+    "Function   : Token name, List<Token> params, List<Statement> body",
     "For        : Expr condition, Statement body, Expression increment",
     "If         : Expr condition, Statement thenBranch, Statement elseBranch",
     "Print      : Expr expression",
