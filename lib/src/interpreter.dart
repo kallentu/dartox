@@ -3,6 +3,7 @@ import 'package:dartox/src/dartox_function.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
+import 'package:dartox/src/return.dart';
 import 'package:dartox/src/runtime_error.dart';
 import 'package:dartox/src/statement.dart';
 import 'package:dartox/src/token.dart';
@@ -184,6 +185,12 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   @override
   void visitPrintStatement(Print statement) =>
       print(_stringify(_evaluate(statement.expression)));
+
+  @override
+  void visitReturnStatement(Return statement) {
+    Object value = statement.value != null ? _evaluate(statement.value) : null;
+    throw ReturnException(value);
+  }
 
   @override
   void visitVarStatement(Var statement) {

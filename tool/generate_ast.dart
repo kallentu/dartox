@@ -41,6 +41,7 @@ main(List<String> args) {
     "For        : Expr condition, Statement body, Expression increment",
     "If         : Expr condition, Statement thenBranch, Statement elseBranch",
     "Print      : Expr expression",
+    "Return     : Token keyword, Expr value",
     "Var        : Token name, Expr initializer",
     "While      : Expr condition, Statement body"
   ]);

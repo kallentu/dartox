@@ -1,6 +1,7 @@
 import 'package:dartox/src/dartox_callable.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/interpreter.dart';
+import 'package:dartox/src/return.dart';
 import 'package:dartox/src/statement.dart';
 
 class DartoxFunction implements DartoxCallable {
@@ -22,7 +23,15 @@ class DartoxFunction implements DartoxCallable {
 
     // Execute the body of the method with the new environment that encapsulates
     // the parameters and their values.
-    interpreter.executeBlock(_declaration.body, environment);
+    try {
+      interpreter.executeBlock(_declaration.body, environment);
+    } catch (e) {
+      if (e is ReturnException) {
+        // Make this return value of our call.
+        return e.value;
+      }
+    }
+
     return null;
   }
 

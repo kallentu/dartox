@@ -86,6 +86,7 @@ class Parser {
   ///            | forStmt
   ///            | ifStmt
   ///            | printStmt
+  ///            | returnStmt
   ///            | whileStmt
   ///            | block
   ///            | breakStmt
@@ -94,6 +95,7 @@ class Parser {
     if (_match([TokenType.FOR])) return _forStatement();
     if (_match([TokenType.IF])) return _ifStatement();
     if (_match([TokenType.PRINT])) return _printStatement();
+    if (_match([TokenType.RETURN])) return _returnStatement();
     if (_match([TokenType.WHILE])) return _whileStatement();
     if (_match([TokenType.BREAK])) return _breakStatement();
     if (_match([TokenType.CONTINUE])) return _continueStatement();
@@ -180,6 +182,17 @@ class Parser {
     Expr value = _ternary();
     _consume(TokenType.SEMICOLON, "Expected ';' after value.");
     return Print(value);
+  }
+
+  /// returnStmt → "return" expression? ";"
+  Statement _returnStatement() {
+    Token keyword = _previous();
+
+    // Semicolon cannot be in an expression so check we don't reach it.
+    Expr value = !_check(TokenType.SEMICOLON) ? _expression() : null;
+
+    _consume(TokenType.SEMICOLON, "Expected ';' after return value.");
+    return Return(keyword, value);
   }
 
   /// breakStmt → "break" ";"

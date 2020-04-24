@@ -14,6 +14,7 @@ abstract class StatementVisitor<R> {
   R visitForStatement(For statement);
   R visitIfStatement(If statement);
   R visitPrintStatement(Print statement);
+  R visitReturnStatement(Return statement);
   R visitVarStatement(Var statement);
   R visitWhileStatement(While statement);
 }
@@ -91,6 +92,16 @@ class Print extends Statement {
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitPrintStatement(this);
+  }
+}
+
+class Return extends Statement {
+  final Token keyword;
+  final Expr value;
+  Return(this.keyword, this.value);
+  @override
+  R accept<R>(StatementVisitor<R> visitor) {
+    return visitor.visitReturnStatement(this);
   }
 }
 
