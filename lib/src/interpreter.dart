@@ -9,9 +9,16 @@ import 'package:dartox/src/token_type.dart';
 
 class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   final ErrorReporter _errorReporter;
-  Environment _environment = Environment();
 
-  Interpreter(this._errorReporter);
+  /// The outermost global environment.
+  static final Environment globals = Environment();
+
+  /// The current environment.
+  Environment _environment = globals;
+
+  Interpreter(this._errorReporter) {
+    globals.define("clock", ClockCallable());
+  }
 
   void interpret(List<Statement> statements) {
     try {
