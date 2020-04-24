@@ -10,6 +10,15 @@ class AstPrinter extends ExprVisitor<String> {
       _parenthesize([expr.operator.lexeme], [expr.left, expr.right]);
 
   @override
+  String visitCallExpr(Call expr) {
+    String contents = expr.callee.accept(this) + "(";
+    for (Expr arg in expr.arguments) {
+      contents += arg.accept(this) + ", ";
+    }
+    return contents.substring(0, contents.length - 2) + ")";
+  }
+
+  @override
   String visitTernaryExpr(Ternary expr) => _parenthesize(
       [expr.operator1.lexeme, expr.operator2.lexeme],
       [expr.value, expr.left, expr.right]);
@@ -37,7 +46,9 @@ class AstPrinter extends ExprVisitor<String> {
 
   @override
   String visitLogicalExpr(Logical expr) =>
-      expr.left.toString() + expr.operator.toString() + expr.right.toString();
+      expr.left.accept(this) +
+      expr.operator.toString() +
+      expr.right.accept(this);
 
   String _parenthesize(List<String> names, List<Expr> expressions) {
     String contents = "(";

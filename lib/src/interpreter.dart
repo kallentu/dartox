@@ -1,3 +1,4 @@
+import 'package:dartox/src/dartox_callable.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
@@ -71,6 +72,34 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
       default:
         // Unreachable.
         return null;
+    }
+  }
+
+  @override
+  Object visitCallExpr(Call expr) {
+    Object callee = _evaluate(expr.callee);
+
+    List<Object> arguments = List();
+    for (Expr arg in expr.arguments) {
+      arguments.add(_evaluate(arg));
+    }
+
+    // Must actually be a callable function.
+    if (callee is DartoxCallable) {
+      // Check arity is correct.
+      if (arguments.length != callee.arity()) {
+        throw RuntimeError(
+            expr.paren,
+            "Expected " +
+                callee.arity().toString() +
+                " arguments, but got " +
+                arguments.length.toString() +
+                ".");
+      }
+
+      return callee.call(this, arguments);
+    } else {
+      throw RuntimeError(expr.paren, "Can only call functions and classes.");
     }
   }
 

@@ -20,6 +20,7 @@ main(List<String> args) {
   ], [
     "Assign   : Token name, Expr value",
     "Binary   : Expr left, Token operator, Expr right",
+    "Call     : Expr callee, Token paren, List<Expr> arguments",
     "Ternary  : Expr value, Token operator1, Expr left, Token operator2, Expr right",
     "Grouping : Expr expression",
     "Literal  : Object value",

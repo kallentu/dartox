@@ -405,7 +405,7 @@ class Parser {
   }
 
   /// unary → ( "!" | "-" ) unary
-  ///      | primary
+  ///      | call
   Expr _unary() {
     if (_match([TokenType.BANG, TokenType.MINUS])) {
       Token operator = _previous();
@@ -413,7 +413,44 @@ class Parser {
       return Unary(operator, right);
     }
 
-    return _primary();
+    return _call();
+  }
+
+  /// call  → primary ( "(" arguments? ")" )*
+  Expr _call() {
+    Expr expr = _primary();
+
+    while (true) {
+      if (_match([TokenType.LEFT_PAREN])) {
+        // Parse call expression using the previously parsed expression as
+        // the callee.
+        expr = _finishCall(expr);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  /// arguments → expression ( "," expression )*
+  /// Parses the argument list
+  Expr _finishCall(Expr callee) {
+    List<Expr> arguments = List();
+    if (!_check(TokenType.RIGHT_PAREN)) {
+      if (arguments.length >= 255) {
+        _error(_peek(), "Cannot have more than 255 arguments.");
+      }
+
+      do {
+        arguments.add(_expression());
+      } while (_match([TokenType.COMMA]));
+    }
+
+    Token paren =
+        _consume(TokenType.RIGHT_PAREN, "Expected ')' after arguments.");
+
+    return Call(callee, paren, arguments);
   }
 
   /// primary → NUMBER | STRING | "false" | "true" | "nil"
