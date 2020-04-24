@@ -170,8 +170,8 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
       _evaluate(statement.expression);
 
   @override
-  void visitFunctionStatement(Function statement) =>
-      _environment.define(statement.name.lexeme, DartoxFunction(statement));
+  void visitFunctionStatement(Function statement) => _environment.define(
+      statement.name.lexeme, DartoxFunction(statement, _environment));
 
   @override
   void visitIfStatement(If statement) {
