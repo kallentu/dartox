@@ -1,8 +1,28 @@
 import 'package:dartox/src/expr.dart';
+import 'package:dartox/src/statement.dart';
+import 'package:dartox/src/token.dart';
 
 class AstPrinter extends ExprVisitor<String> {
   String print(Expr expr) {
     return expr.accept(this);
+  }
+
+  @override
+  String visitAnonFunctionExpr(AnonFunction expr) {
+    String contents = "fun (";
+
+    for (Token param in expr.params) {
+      contents += param.lexeme + ", ";
+    }
+
+    // Remove last comma.
+    contents = contents.substring(0, contents.length - 2) + ") {\n";
+
+    for (Statement statement in expr.body) {
+      contents += statement.toString() + "\n";
+    }
+
+    return contents + "}";
   }
 
   @override

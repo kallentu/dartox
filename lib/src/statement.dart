@@ -58,6 +58,7 @@ class Function extends Statement {
   final List<Token> params;
   final List<Statement> body;
   Function(this.name, this.params, this.body);
+  Function.withNoName(this.params, this.body) : name = null;
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitFunctionStatement(this);

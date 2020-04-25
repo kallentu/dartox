@@ -34,6 +34,11 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   }
 
   @override
+  Object visitAnonFunctionExpr(AnonFunction anonFunction) => DartoxFunction(
+      Function.withNoName(anonFunction.params, anonFunction.body),
+      _environment);
+
+  @override
   Object visitBinaryExpr(Binary expr) {
     Object left = _evaluate(expr.left);
     Object right = _evaluate(expr.right);

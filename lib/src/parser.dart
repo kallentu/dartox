@@ -460,9 +460,9 @@ class Parser {
     return _call();
   }
 
-  /// call  → primary ( "(" arguments? ")" )*
+  /// call → anonFun ( "(" arguments? ")" )*
   Expr _call() {
-    Expr expr = _primary();
+    Expr expr = _anonFunction();
 
     while (true) {
       if (_match([TokenType.LEFT_PAREN])) {
@@ -495,6 +495,37 @@ class Parser {
         _consume(TokenType.RIGHT_PAREN, "Expected ')' after arguments.");
 
     return Call(callee, paren, arguments);
+  }
+
+  /// anonFun → "fun" "(" parameters? ")" block
+  ///         | primary
+  /// parameters → IDENTIFIER ( "," IDENTIFIER )*
+  Expr _anonFunction() {
+    if (!_match([TokenType.FUN])) return _primary();
+
+    // Parse the arguments.
+    _consume(TokenType.LEFT_PAREN, "Expected '(' for anonymous function.");
+    List<Token> parameters = List();
+    if (!_check(TokenType.RIGHT_PAREN)) {
+      do {
+        // Parameter length for functions.
+        if (parameters.length >= 255) {
+          _error(_peek(), "Cannot have more than 255 parameters.");
+        }
+
+        parameters
+            .add(_consume(TokenType.IDENTIFIER, "Expected parameter name."));
+      } while (_match([TokenType.COMMA]));
+    }
+    _consume(TokenType.RIGHT_PAREN,
+        "Expected ')' after anonymous function parameters.");
+
+    // Parse the block.
+    _consume(
+        TokenType.LEFT_BRACE, "Expected '{' before anonymous function body.");
+    List<Statement> body = _block();
+
+    return AnonFunction(parameters, body);
   }
 
   /// primary → NUMBER | STRING | "false" | "true" | "nil"

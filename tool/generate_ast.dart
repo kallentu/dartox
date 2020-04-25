@@ -16,17 +16,19 @@ main(List<String> args) {
 
   String outputDir = argResults.arguments.elementAt(0);
   _defineAst(outputDir, "Expr", [
-    "package:dartox/src/token.dart"
+    "package:dartox/src/token.dart",
+    "package:dartox/src/statement.dart"
   ], [
-    "Assign   : Token name, Expr value",
-    "Binary   : Expr left, Token operator, Expr right",
-    "Call     : Expr callee, Token paren, List<Expr> arguments",
-    "Ternary  : Expr value, Token operator1, Expr left, Token operator2, Expr right",
-    "Grouping : Expr expression",
-    "Literal  : Object value",
-    "Logical  : Expr left, Token operator, Expr right",
-    "Unary    : Token operator, Expr right",
-    "Variable : Token name"
+    "Assign       : Token name, Expr value",
+    "AnonFunction : List<Token> params, List<Statement> body",
+    "Binary       : Expr left, Token operator, Expr right",
+    "Call         : Expr callee, Token paren, List<Expr> arguments",
+    "Ternary      : Expr value, Token operator1, Expr left, Token operator2, Expr right",
+    "Grouping     : Expr expression",
+    "Literal      : Object value",
+    "Logical      : Expr left, Token operator, Expr right",
+    "Unary        : Token operator, Expr right",
+    "Variable     : Token name"
   ]);
 
   _defineAst(outputDir, "Statement", [

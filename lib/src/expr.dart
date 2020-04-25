@@ -1,4 +1,5 @@
 import 'package:dartox/src/token.dart';
+import 'package:dartox/src/statement.dart';
 
 abstract class Expr {
   R accept<R>(ExprVisitor<R> visitor);
@@ -6,6 +7,7 @@ abstract class Expr {
 
 abstract class ExprVisitor<R> {
   R visitAssignExpr(Assign expr);
+  R visitAnonFunctionExpr(AnonFunction expr);
   R visitBinaryExpr(Binary expr);
   R visitCallExpr(Call expr);
   R visitTernaryExpr(Ternary expr);
@@ -23,6 +25,16 @@ class Assign extends Expr {
   @override
   R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitAssignExpr(this);
+  }
+}
+
+class AnonFunction extends Expr {
+  final List<Token> params;
+  final List<Statement> body;
+  AnonFunction(this.params, this.body);
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitAnonFunctionExpr(this);
   }
 }
 
