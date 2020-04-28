@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:dartox/src/dartox_callable.dart';
 import 'package:dartox/src/dartox_function.dart';
 import 'package:dartox/src/environment.dart';
@@ -14,6 +16,10 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
   /// The outermost global environment.
   final Environment globals = Environment();
+
+  /// Number of environments between current and enclosing one where we can find
+  /// the value of our Expr.
+  final HashMap<Expr, int> locals = HashMap();
 
   /// The current environment.
   Environment _environment;
@@ -278,6 +284,10 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
   /// Execute the behaviour of the statement given.
   void _execute(Statement statement) => statement.accept(this);
+
+  /// Each expression node is its own Expr object, so this will be fine to
+  /// keep them unique.
+  void resolve(Expr expr, int depth) => locals.putIfAbsent(expr, () => depth);
 
   /// Updates to execute with the current environment, innermost scope.
   void executeBlock(List<Statement> statements, Environment environment) {
