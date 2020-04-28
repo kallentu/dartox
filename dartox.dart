@@ -54,6 +54,9 @@ void _run(String source) {
   Resolver resolver = Resolver(interpreter, errorReporter);
   resolver.resolveStatements(statements);
 
+  // Stop if there was a resolution error.
+  if (errorReporter.hadError) return;
+
   // Interpret the AST created.
   interpreter.interpret(statements);
 }

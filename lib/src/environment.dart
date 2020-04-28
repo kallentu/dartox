@@ -11,6 +11,7 @@ class Environment {
   final HashMap<String, Object> values = HashMap();
 
   /// This environment body is a part of a loop (used for breaks, continues).
+  /// TODO(kallentu): Put this into the resolver instead.
   bool isLoopEnvironment = false;
 
   /// Booleans for break and continue statements.

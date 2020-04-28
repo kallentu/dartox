@@ -18,6 +18,8 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   /// If false, not finished being initialized.
   final Stack<HashMap<String, bool>> _scopes = Stack();
 
+  FunctionType _currentFunction = FunctionType.NONE;
+
   final ErrorReporter _errorReporter;
 
   Resolver(this._interpreter, this._errorReporter);
@@ -58,7 +60,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _define(statement.name);
 
     // Introduces a scope and bind its parameters into that scope.
-    _resolveFunction(statement);
+    _resolveFunction(statement, FunctionType.FUNCTION);
   }
 
   @override
@@ -73,6 +75,11 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 
   @override
   void visitReturnStatement(Return statement) {
+    if (_currentFunction == FunctionType.NONE) {
+      _errorReporter.tokenError(
+          statement.keyword, "Cannot return from top-level code.");
+    }
+
     if (statement.value != null) {
       _resolveExpr(statement.value);
     }
@@ -176,7 +183,12 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   }
 
   /// Creates a new scope and binds variables for each of the parameters.
-  void _resolveFunction(Function function) {
+  void _resolveFunction(Function function, FunctionType type) {
+    // Set function type when we enter a scope, then reset when we leave the
+    // scope.
+    FunctionType enclosingFunction = _currentFunction;
+    _currentFunction = type;
+
     _beginScope();
     for (Token parameter in function.params) {
       _declare(parameter);
@@ -184,6 +196,8 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     }
     resolveStatements(function.body);
     _endScope();
+
+    _currentFunction = enclosingFunction;
   }
 
   void _beginScope() => _scopes.push(new HashMap<String, bool>());
@@ -194,6 +208,12 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     if (_scopes.isEmpty) return;
 
     HashMap<String, bool> scope = _scopes.peek();
+    if (scope.containsKey(name.lexeme)) {
+      // Invalid redeclaration.
+      _errorReporter.tokenError(
+          name, "Variable with this name is already declared in this scope.");
+    }
+
     scope.putIfAbsent(name.lexeme, () => false);
   }
 
@@ -202,3 +222,5 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _scopes.peek().putIfAbsent(name.lexeme, () => true);
   }
 }
+
+enum FunctionType { NONE, FUNCTION }
