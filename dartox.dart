@@ -8,6 +8,7 @@ import 'package:dartox/src/parser.dart';
 import 'package:dartox/src/statement.dart';
 import 'package:dartox/src/ast_printer.dart';
 import 'package:dartox/src/interpreter.dart';
+import 'package:dartox/src/resolver.dart';
 
 final ErrorReporter errorReporter = ErrorReporter();
 final Interpreter interpreter = Interpreter(errorReporter);
@@ -49,6 +50,9 @@ void _run(String source) {
 
   // Stop if there is a syntax error.
   if (errorReporter.hadError) return;
+
+  Resolver resolver = Resolver(interpreter, errorReporter);
+  resolver.resolveStatements(statements);
 
   // Interpret the AST created.
   interpreter.interpret(statements);

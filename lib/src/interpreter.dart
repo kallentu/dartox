@@ -261,12 +261,26 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
       _environment.setContinued(true);
 
   @override
-  Object visitVariableExpr(Variable expr) => _environment.get(expr.name);
+  Object visitVariableExpr(Variable expr) => _lookUpVariable(expr.name, expr);
+
+  Object _lookUpVariable(Token name, Expr expr) {
+    // No distance means global variable.
+    int distance = locals[expr];
+    return distance != null
+        ? _environment.getAt(distance, name.lexeme)
+        : globals.get(name);
+  }
 
   @override
   Object visitAssignExpr(Assign expr) {
     Object value = _evaluate(expr.value);
-    _environment.assign(expr.name, value);
+    int distance = locals[expr];
+    if (distance != null) {
+      _environment.assignAt(distance, expr.name, value);
+    } else {
+      globals.assign(expr.name, value);
+    }
+
     return value;
   }
 

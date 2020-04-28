@@ -77,4 +77,19 @@ class Environment {
   /// Adds a new variable to the map.
   void define(String name, Object value) =>
       values.putIfAbsent(name, () => value);
+
+  Environment ancestor(int distance) {
+    Environment environment = this;
+    for (int i = 0; i < distance; i++) {
+      environment = environment.enclosing;
+    }
+    return environment;
+  }
+
+  /// Value at the environment [distance] away from the current.
+  Object getAt(int distance, String name) => ancestor(distance).values[name];
+
+  /// Assign value at the environment [distance] away from the current.
+  void assignAt(int distance, Token name, Object value) =>
+      ancestor(distance).values.putIfAbsent(name.lexeme, () => value);
 }
