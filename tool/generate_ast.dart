@@ -36,11 +36,11 @@ main(List<String> args) {
     "package:dartox/src/token.dart"
   ], [
     "Block      : List<Statement> statements",
-    "Break      :",
-    "Continue   :",
+    "Break      : Token keyword",
+    "Continue   : Token keyword",
     "Expression : Expr expression",
     "Function   : Token name, List<Token> params, List<Statement> body",
-    "For        : Expr condition, Statement body, Expression increment",
+    "For        : Statement init, Expr condition, Statement body, Expression increment",
     "If         : Expr condition, Statement thenBranch, Statement elseBranch",
     "Print      : Expr expression",
     "Return     : Token keyword, Expr value",

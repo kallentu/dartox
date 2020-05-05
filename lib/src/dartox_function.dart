@@ -1,7 +1,7 @@
 import 'package:dartox/src/dartox_callable.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/interpreter.dart';
-import 'package:dartox/src/return.dart';
+import 'package:dartox/src/exception.dart';
 import 'package:dartox/src/statement.dart';
 
 class DartoxFunction implements DartoxCallable {

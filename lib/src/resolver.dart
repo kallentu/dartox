@@ -19,6 +19,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   final Stack<HashMap<String, bool>> _scopes = Stack();
 
   FunctionType _currentFunction = FunctionType.NONE;
+  LoopType _currentLoop = LoopType.NONE;
 
   final ErrorReporter _errorReporter;
 
@@ -38,10 +39,20 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   }
 
   @override
-  void visitBreakStatement(Break statement) => null;
+  void visitBreakStatement(Break statement) {
+    if (_currentLoop == LoopType.NONE) {
+      _errorReporter.tokenError(
+          statement.keyword, "Cannot break when not in a loop.");
+    }
+  }
 
   @override
-  void visitContinueStatement(Continue statement) => null;
+  void visitContinueStatement(Continue statement) {
+    if (_currentLoop == LoopType.NONE) {
+      _errorReporter.tokenError(
+          statement.keyword, "Cannot continue when not in a loop.");
+    }
+  }
 
   @override
   void visitExpressionStatement(Expression statement) =>
@@ -49,8 +60,17 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 
   @override
   void visitForStatement(For statement) {
-    _resolveExpr(statement.condition);
+    // Hoist the variable init/assignment out of scope for loop usage.
+    _resolveStatement(statement.init);
+
+    // Set loop type when we enter a scope, then reset when we leave the scope.
+    LoopType enclosingLoop = _currentLoop;
+    _currentLoop = LoopType.LOOP;
     _resolveStatement(statement.body);
+    _currentLoop = enclosingLoop;
+
+    _resolveExpr(statement.condition);
+    _resolveStatement(statement.increment);
   }
 
   @override
@@ -97,7 +117,12 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   @override
   void visitWhileStatement(While statement) {
     _resolveExpr(statement.condition);
+
+    // Set loop type when we enter a scope, then reset when we leave the scope.
+    LoopType enclosingLoop = _currentLoop;
+    _currentLoop = LoopType.LOOP;
     _resolveStatement(statement.body);
+    _currentLoop = enclosingLoop;
   }
 
   @override
@@ -224,3 +249,5 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 }
 
 enum FunctionType { NONE, FUNCTION }
+
+enum LoopType { NONE, LOOP }

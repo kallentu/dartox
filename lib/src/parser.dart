@@ -9,9 +9,6 @@ class Parser {
   final ErrorReporter errorReporter;
   int _current = 0;
 
-  /// [true] if parser is currently parsing statements in a loop body.
-  bool _inLoop = false;
-
   Parser(this._tokens, this.errorReporter);
 
   List<Statement> parse() {
@@ -107,6 +104,10 @@ class Parser {
   ///                    expression? ";"
   ///                    expression? ")" statement
   /// For loops are syntactic sugar for while loops.
+  ///
+  /// ie.
+  /// for (var a = 0; a < 7; a = a + 1) { if (a == 2) { continue; } else { print a; } }
+  /// for (var a = 0; a < 7; a = a + 1) { if (a == 2) { break; } else { print a; } }
   Statement _forStatement() {
     _consume(TokenType.LEFT_PAREN, "Expected '(' after 'for'.");
 
@@ -133,25 +134,14 @@ class Parser {
     }
     _consume(TokenType.RIGHT_PAREN, "Expected ')' after for clauses.");
 
-    // Ensure that any breaks/continues will be in a loop only.
-    _inLoop = true;
     Statement body = _statement();
-    _inLoop = false;
 
     // If there is no condition, the for loop will always run.
     if (condition == null) condition = Literal(true);
 
     // Otherwise, use the condition given.
     // Also, add increment statement for break/continue usage.
-    body = For(condition, body, Expression(increment));
-
-    // Initializer will run first before loop.
-    // Assignment or variable declaration before the body is run.
-    if (initializer != null) {
-      body = Block([initializer, body]);
-    }
-
-    return body;
+    return For(initializer, condition, body, Expression(increment));
   }
 
   /// ifStmt → "if" "(" expression ")" statement ( "else" statement )?
@@ -197,36 +187,29 @@ class Parser {
 
   /// breakStmt → "break" ";"
   Statement _breakStatement() {
-    // Ensure that we only allow break syntax inside a loop.
-    if (!_inLoop) {
-      _error(_previous(), "Break statements must be in a loop.");
-    }
-
+    Token breakToken = _previous();
     _consume(TokenType.SEMICOLON, "Expected ';' after break.");
-    return Break();
+    return Break(breakToken);
   }
 
   /// continueStmt → "continue" ";"
   Statement _continueStatement() {
-    // Ensure that we only allow continue syntax inside a loop.
-    if (!_inLoop) {
-      _error(_previous(), "Continue statements must be in a loop.");
-    }
-
+    Token continueToken = _previous();
     _consume(TokenType.SEMICOLON, "Expected ';' after continue.");
-    return Continue();
+    return Continue(continueToken);
   }
 
   /// whileStmt → "while" "(" expression ")" statement
+  ///
+  /// ie.
+  /// var a = 0;
+  /// while (a < 7) { a = a + 1; if (a == 2) { continue; } else { print a; } }
   Statement _whileStatement() {
     _consume(TokenType.LEFT_PAREN, "Expected '(' after 'while'.");
     Expr condition = _expression();
     _consume(TokenType.RIGHT_PAREN, "Expected ')' after condition.");
-    // Ensure that any breaks/continues will be in a loop only.
-    _inLoop = true;
-    Statement body = _statement();
-    _inLoop = false;
 
+    Statement body = _statement();
     return While(condition, body);
   }
 

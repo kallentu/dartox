@@ -29,7 +29,8 @@ class Block extends Statement {
 }
 
 class Break extends Statement {
-  Break();
+  final Token keyword;
+  Break(this.keyword);
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitBreakStatement(this);
@@ -37,7 +38,8 @@ class Break extends Statement {
 }
 
 class Continue extends Statement {
-  Continue();
+  final Token keyword;
+  Continue(this.keyword);
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitContinueStatement(this);
@@ -66,10 +68,11 @@ class Function extends Statement {
 }
 
 class For extends Statement {
+  final Statement init;
   final Expr condition;
   final Statement body;
   final Expression increment;
-  For(this.condition, this.body, this.increment);
+  For(this.init, this.condition, this.body, this.increment);
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitForStatement(this);
