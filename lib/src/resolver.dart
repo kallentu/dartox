@@ -14,9 +14,9 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   /// If we cannot find in the stack of scopes, it must be global.
   ///
   /// Each element is a Map which is a single block scope.
-  /// <String, bool> is <variable-names, is-ready>
+  /// <Token, <bool, bool>> is <variable-token, <is-ready, was-used>>
   /// If false, not finished being initialized.
-  final Stack<HashMap<String, bool>> _scopes = Stack();
+  final Stack<HashMap<Token, ScopeInfo>> _scopes = Stack();
 
   FunctionType _currentFunction = FunctionType.NONE;
   LoopType _currentLoop = LoopType.NONE;
@@ -184,7 +184,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 
   @override
   void visitVariableExpr(Variable expr) {
-    if (!_scopes.isEmpty && _scopes.peek()[expr.name.lexeme] == false) {
+    if (!_scopes.isEmpty && _scopes.peek()[expr.name.lexeme].isReady == false) {
       // Declared, but not defined. Error.
       _errorReporter.tokenError(
           expr.name, "Cannot read local variable in its own initializer");
@@ -199,6 +199,9 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   void _resolveLocal(Expr expr, Token name) {
     for (int i = _scopes.size() - 1; i >= 0; i--) {
       if (_scopes.get(i).containsKey(name.lexeme)) {
+        // Set variable as used.
+        _scopes.get(i)[name.lexeme].wasUsed = true;
+
         _interpreter.resolve(expr, _scopes.size() - 1 - i);
         return;
       }
@@ -225,29 +228,49 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _currentFunction = enclosingFunction;
   }
 
-  void _beginScope() => _scopes.push(new HashMap<String, bool>());
+  void _beginScope() => _scopes.push(new HashMap<Token, ScopeInfo>());
 
-  void _endScope() => _scopes.pop();
+  void _endScope() {
+    // Variables that were never used in any other part of the code will report
+    // an error.
+    void checkUnusedVariables(Token name, ScopeInfo scopeInfo) {
+      if (!scopeInfo.wasUsed) {
+        _errorReporter.tokenError(name, "Variable is unused.");
+      }
+    }
 
+    _scopes.peek().forEach(checkUnusedVariables);
+    _scopes.pop();
+  }
+
+  /// The state where the variable is not redefined nor used.
   void _declare(Token name) {
     if (_scopes.isEmpty) return;
 
-    HashMap<String, bool> scope = _scopes.peek();
+    HashMap<Token, ScopeInfo> scope = _scopes.peek();
     if (scope.containsKey(name.lexeme)) {
       // Invalid redeclaration.
       _errorReporter.tokenError(
           name, "Variable with this name is already declared in this scope.");
     }
 
-    scope.putIfAbsent(name.lexeme, () => false);
+    scope.putIfAbsent(name, () => ScopeInfo(false, false));
   }
 
+  /// The state where the variable is ready, but not used yet.
   void _define(Token name) {
     if (_scopes.isEmpty) return;
-    _scopes.peek().putIfAbsent(name.lexeme, () => true);
+    _scopes.peek().putIfAbsent(name, () => ScopeInfo(true, false));
   }
 }
 
 enum FunctionType { NONE, FUNCTION }
 
 enum LoopType { NONE, LOOP }
+
+/// Scope information used for the [_scopes] map in [Resolver].
+class ScopeInfo {
+  bool isReady;
+  bool wasUsed;
+  ScopeInfo(this.isReady, this.wasUsed);
+}
