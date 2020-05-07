@@ -159,6 +159,19 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   }
 
   @override
+  Object visitSetExpr(Set expr) {
+    Object object = _evaluate(expr.object);
+
+    if (!(object is DartoxInstance)) {
+      throw RuntimeError(expr.name, "Only instances have fields.");
+    }
+
+    Object value = _evaluate(expr.value);
+    (object as DartoxInstance).set(expr.name, value);
+    return value;
+  }
+
+  @override
   Object visitTernaryExpr(Ternary expr) {
     // Only ternary expression is ?:
     if (expr.operator1.type == TokenType.QUESTION &&

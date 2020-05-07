@@ -22,4 +22,7 @@ class DartoxInstance {
     // If instance doesn't have field, we throw an error.
     throw RuntimeError(name, "Undefined property '${name.lexeme}'.");
   }
+
+  void set(Token name, Object value) =>
+      _fields.putIfAbsent(name.lexeme, () => value);
 }

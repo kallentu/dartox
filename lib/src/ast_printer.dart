@@ -52,6 +52,16 @@ class AstPrinter extends ExprVisitor<String> {
   }
 
   @override
+  String visitLogicalExpr(Logical expr) =>
+      expr.left.accept(this) +
+      expr.operator.toString() +
+      expr.right.accept(this);
+
+  @override
+  String visitSetExpr(Set expr) =>
+      "${print(expr.object)}.${expr.name.lexeme} = ${expr.value}";
+
+  @override
   String visitTernaryExpr(Ternary expr) => _parenthesize(
       [expr.operator1.lexeme, expr.operator2.lexeme],
       [expr.value, expr.left, expr.right]);
@@ -66,12 +76,6 @@ class AstPrinter extends ExprVisitor<String> {
   @override
   String visitAssignExpr(Assign expr) =>
       expr.name.toString() + " = " + expr.value.toString();
-
-  @override
-  String visitLogicalExpr(Logical expr) =>
-      expr.left.accept(this) +
-      expr.operator.toString() +
-      expr.right.accept(this);
 
   String _parenthesize(List<String> names, List<Expr> expressions) {
     String contents = "(";

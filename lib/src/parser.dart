@@ -287,8 +287,8 @@ class Parser {
   /// expression → assignment
   Expr _expression() => _assignment();
 
-  /// assignment → IDENTIFIER "=" assignment
-  ///           | equality
+  /// assignment → ( call "." )? IDENTIFIER "=" assignment
+  ///           | logic_or
   Expr _assignment() {
     // Parse left hand side. If it is actually assignment, this still works
     // since it is still an expression.
@@ -303,6 +303,8 @@ class Parser {
       if (expr is Variable) {
         Token name = expr.name;
         return Assign(name, value);
+      } else if (expr is Get) {
+        return Set(expr.object, expr.name, value);
       } else {
         _error(equals, "Invalid assignment target.");
       }

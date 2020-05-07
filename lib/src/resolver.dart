@@ -182,6 +182,13 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _resolveExpr(expr.right);
   }
 
+  /// Since properties are looked up dynamically, they don't get resolved.
+  @override
+  void visitSetExpr(Set expr) {
+    _resolveExpr(expr.value);
+    _resolveExpr(expr.object);
+  }
+
   @override
   void visitTernaryExpr(Ternary expr) {
     _resolveExpr(expr.value);
