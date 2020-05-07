@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:dartox/src/dartox_callable.dart';
+import 'package:dartox/src/dartox_class.dart';
 import 'package:dartox/src/dartox_function.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/error.dart';
@@ -263,6 +264,15 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
   @override
   void visitBreakStatement(Break statement) => throw BreakException();
+
+  @override
+  void visitClassStatement(Class statement) {
+    _environment.define(statement.name.lexeme, null);
+
+    // Turn the syntax node into LoxClass, runtime rep. of the class.
+    DartoxClass clas = DartoxClass(statement.name.lexeme);
+    _environment.assign(statement.name, clas);
+  }
 
   @override
   void visitContinueStatement(Continue statement) => throw ContinueException();

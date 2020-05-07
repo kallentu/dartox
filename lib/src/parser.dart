@@ -19,13 +19,15 @@ class Parser {
     return statements;
   }
 
-  /// declaration → funDecl
+  /// declaration → classDecl
+  ///            | funDecl
   ///            | varDecl
   ///            | statement
   Statement _declaration() {
     try {
       // Check if there is a declaration, otherwise move to (higher precedent)
       // statement.
+      if (_match([TokenType.CLASS])) return _classDeclaration();
       if (_match([TokenType.FUN])) return _function("function");
       if (_match([TokenType.VAR])) return _varDeclaration();
       return _statement();
@@ -34,6 +36,20 @@ class Parser {
       _synchronize();
       return null;
     }
+  }
+
+  /// classDecl → "class" IDENTIFIER "{" function* "}"
+  Statement _classDeclaration() {
+    Token name = _consume(TokenType.IDENTIFIER, "Expected class name.");
+    _consume(TokenType.LEFT_BRACE, "Expected '{' before class body.");
+
+    List<Function> methods = List();
+    while (!_check(TokenType.RIGHT_BRACE) && !_isAtEnd()) {
+      methods.add(_function("method"));
+    }
+
+    _consume(TokenType.RIGHT_BRACE, "Expected '}' after class body.");
+    return Class(name, methods);
   }
 
   /// funDecl  → "fun" function

@@ -47,6 +47,12 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   }
 
   @override
+  void visitClassStatement(Class statement) {
+    _declare(statement.name);
+    _define(statement.name);
+  }
+
+  @override
   void visitContinueStatement(Continue statement) {
     if (_currentLoop == LoopType.NONE) {
       _errorReporter.tokenError(

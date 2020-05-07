@@ -8,6 +8,7 @@ abstract class Statement {
 abstract class StatementVisitor<R> {
   R visitBlockStatement(Block statement);
   R visitBreakStatement(Break statement);
+  R visitClassStatement(Class statement);
   R visitContinueStatement(Continue statement);
   R visitExpressionStatement(Expression statement);
   R visitFunctionStatement(Function statement);
@@ -34,6 +35,16 @@ class Break extends Statement {
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitBreakStatement(this);
+  }
+}
+
+class Class extends Statement {
+  final Token name;
+  final List<Function> methods;
+  Class(this.name, this.methods);
+  @override
+  R accept<R>(StatementVisitor<R> visitor) {
+    return visitor.visitClassStatement(this);
   }
 }
 

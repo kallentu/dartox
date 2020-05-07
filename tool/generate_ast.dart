@@ -37,6 +37,7 @@ main(List<String> args) {
   ], [
     "Block      : List<Statement> statements",
     "Break      : Token keyword",
+    "Class      : Token name, List<Function> methods",
     "Continue   : Token keyword",
     "Expression : Expr expression",
     "Function   : Token name, List<Token> params, List<Statement> body",
