@@ -268,8 +268,6 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   @override
   void visitClassStatement(Class statement) {
     _environment.define(statement.name.lexeme, null);
-
-    // Turn the syntax node into LoxClass, runtime rep. of the class.
     DartoxClass clas = DartoxClass(statement.name.lexeme);
     _environment.assign(statement.name, clas);
   }
