@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:dartox/src/dartox_callable.dart';
 import 'package:dartox/src/dartox_class.dart';
 import 'package:dartox/src/dartox_function.dart';
+import 'package:dartox/src/dartox_instance.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/error.dart';
 import 'package:dartox/src/expr.dart';
@@ -123,6 +124,16 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
     } else {
       throw RuntimeError(expr.paren, "Can only call functions and classes.");
     }
+  }
+
+  @override
+  Object visitGetExpr(Get expr) {
+    Object object = _evaluate(expr.object);
+    if (object is DartoxInstance) {
+      return object.get(expr.name);
+    }
+
+    throw RuntimeError(expr.name, "Only instances have properties.");
   }
 
   @override

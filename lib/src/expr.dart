@@ -10,10 +10,11 @@ abstract class ExprVisitor<R> {
   R visitAnonFunctionExpr(AnonFunction expr);
   R visitBinaryExpr(Binary expr);
   R visitCallExpr(Call expr);
-  R visitTernaryExpr(Ternary expr);
+  R visitGetExpr(Get expr);
   R visitGroupingExpr(Grouping expr);
   R visitLiteralExpr(Literal expr);
   R visitLogicalExpr(Logical expr);
+  R visitTernaryExpr(Ternary expr);
   R visitUnaryExpr(Unary expr);
   R visitVariableExpr(Variable expr);
 }
@@ -60,16 +61,13 @@ class Call extends Expr {
   }
 }
 
-class Ternary extends Expr {
-  final Expr value;
-  final Token operator1;
-  final Expr left;
-  final Token operator2;
-  final Expr right;
-  Ternary(this.value, this.operator1, this.left, this.operator2, this.right);
+class Get extends Expr {
+  final Expr object;
+  final Token name;
+  Get(this.object, this.name);
   @override
   R accept<R>(ExprVisitor<R> visitor) {
-    return visitor.visitTernaryExpr(this);
+    return visitor.visitGetExpr(this);
   }
 }
 
@@ -99,6 +97,19 @@ class Logical extends Expr {
   @override
   R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitLogicalExpr(this);
+  }
+}
+
+class Ternary extends Expr {
+  final Expr value;
+  final Token operator1;
+  final Expr left;
+  final Token operator2;
+  final Expr right;
+  Ternary(this.value, this.operator1, this.left, this.operator2, this.right);
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitTernaryExpr(this);
   }
 }
 

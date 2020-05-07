@@ -23,10 +23,11 @@ main(List<String> args) {
     "AnonFunction : List<Token> params, List<Statement> body",
     "Binary       : Expr left, Token operator, Expr right",
     "Call         : Expr callee, Token paren, List<Expr> arguments",
-    "Ternary      : Expr value, Token operator1, Expr left, Token operator2, Expr right",
+    "Get          : Expr object, Token name",
     "Grouping     : Expr expression",
     "Literal      : Object value",
     "Logical      : Expr left, Token operator, Expr right",
+    "Ternary      : Expr value, Token operator1, Expr left, Token operator2, Expr right",
     "Unary        : Token operator, Expr right",
     "Variable     : Token name"
   ]);

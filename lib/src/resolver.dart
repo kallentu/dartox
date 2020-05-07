@@ -165,6 +165,10 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     }
   }
 
+  /// Since properties are looked up dynamically, they don't get resolved.
+  @override
+  void visitGetExpr(Get expr) => _resolveExpr(expr.object);
+
   @override
   void visitGroupingExpr(Grouping expr) => _resolveExpr(expr.expression);
 

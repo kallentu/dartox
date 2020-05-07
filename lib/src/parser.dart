@@ -459,7 +459,7 @@ class Parser {
     return _call();
   }
 
-  /// call → anonFun ( "(" arguments? ")" )*
+  /// call → anonFun ( "(" arguments? ")" | "." IDENTIFIER )*
   Expr _call() {
     Expr expr = _anonFunction();
 
@@ -468,6 +468,10 @@ class Parser {
         // Parse call expression using the previously parsed expression as
         // the callee.
         expr = _finishCall(expr);
+      } else if (_match([TokenType.DOT])) {
+        Token name =
+            _consume(TokenType.IDENTIFIER, "Expected property name after '.'.");
+        expr = Get(expr, name);
       } else {
         break;
       }

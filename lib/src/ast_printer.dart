@@ -39,9 +39,7 @@ class AstPrinter extends ExprVisitor<String> {
   }
 
   @override
-  String visitTernaryExpr(Ternary expr) => _parenthesize(
-      [expr.operator1.lexeme, expr.operator2.lexeme],
-      [expr.value, expr.left, expr.right]);
+  String visitGetExpr(Get expr) => print(expr.object) + ".${expr.name}";
 
   @override
   String visitGroupingExpr(Grouping expr) =>
@@ -52,6 +50,11 @@ class AstPrinter extends ExprVisitor<String> {
     if (expr.value == null) return "nil";
     return expr.value.toString();
   }
+
+  @override
+  String visitTernaryExpr(Ternary expr) => _parenthesize(
+      [expr.operator1.lexeme, expr.operator2.lexeme],
+      [expr.value, expr.left, expr.right]);
 
   @override
   String visitUnaryExpr(Unary expr) =>
