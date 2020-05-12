@@ -1,4 +1,5 @@
 import 'package:dartox/src/dartox_callable.dart';
+import 'package:dartox/src/dartox_instance.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/interpreter.dart';
 import 'package:dartox/src/exception.dart';
@@ -42,4 +43,13 @@ class DartoxFunction implements DartoxCallable {
 
   @override
   String toString() => "<fn " + _declaration.name.lexeme + ">";
+
+  /// Create new environment nestled inside the method's original closure.
+  /// When method is called, it will become the parent of the method body's
+  /// environment. "this" is bound to the instance.
+  DartoxFunction bind(DartoxInstance instance) {
+    Environment environment = Environment.withEnclosing(_closure);
+    environment.define("this", instance);
+    return DartoxFunction(_declaration, environment);
+  }
 }

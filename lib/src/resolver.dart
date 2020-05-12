@@ -14,9 +14,9 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   /// If we cannot find in the stack of scopes, it must be global.
   ///
   /// Each element is a Map which is a single block scope.
-  /// <Token, <bool, bool>> is <variable-token, <is-ready, was-used>>
+  /// <String, <bool, bool>> is <variable-name, <is-ready, was-used>>
   /// If false, not finished being initialized.
-  final Stack<HashMap<Token, ScopeInfo>> _scopes = Stack();
+  final Stack<HashMap<String, ScopeInfo>> _scopes = Stack();
 
   FunctionType _currentFunction = FunctionType.NONE;
   LoopType _currentLoop = LoopType.NONE;
@@ -51,11 +51,16 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _declare(statement.name);
     _define(statement.name);
 
+    _beginScope();
+    _scopes.peek()["this"] = ScopeInfo(true, false);
+
     // Resolve the methods in the class.
     for (Function method in statement.methods) {
       FunctionType declaration = FunctionType.METHOD;
       _resolveFunction(method, declaration);
     }
+
+    _endScope();
   }
 
   @override
@@ -103,7 +108,8 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   }
 
   @override
-  void visitPrintStatement(Print statement) => null;
+  void visitPrintStatement(Print statement) =>
+      _resolveExpr(statement.expression);
 
   @override
   void visitReturnStatement(Return statement) {
@@ -202,6 +208,11 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _resolveExpr(expr.right);
   }
 
+  /// Resolve like a local variable.
+  /// This is set in [visitClassStatement].
+  @override
+  void visitThisExpr(This expr) => _resolveLocal(expr, expr.keyword);
+
   @override
   void visitUnaryExpr(Unary expr) => _resolveExpr(expr.right);
 
@@ -251,14 +262,14 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _currentFunction = enclosingFunction;
   }
 
-  void _beginScope() => _scopes.push(new HashMap<Token, ScopeInfo>());
+  void _beginScope() => _scopes.push(new HashMap<String, ScopeInfo>());
 
   void _endScope() {
     // Variables that were never used in any other part of the code will report
     // an error.
-    void checkUnusedVariables(Token name, ScopeInfo scopeInfo) {
-      if (!scopeInfo.wasUsed) {
-        _errorReporter.tokenError(name, "Variable is unused.");
+    void checkUnusedVariables(String name, ScopeInfo scopeInfo) {
+      if (!scopeInfo.wasUsed && name != "this") {
+        _errorReporter.simpleError("Variable '$name' is unused.");
       }
     }
 
@@ -270,20 +281,20 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   void _declare(Token name) {
     if (_scopes.isEmpty) return;
 
-    HashMap<Token, ScopeInfo> scope = _scopes.peek();
+    HashMap<String, ScopeInfo> scope = _scopes.peek();
     if (scope.containsKey(name.lexeme)) {
       // Invalid redeclaration.
       _errorReporter.tokenError(
           name, "Variable with this name is already declared in this scope.");
     }
 
-    scope.putIfAbsent(name, () => ScopeInfo(false, false));
+    scope[name.lexeme] = ScopeInfo(false, false);
   }
 
   /// The state where the variable is ready, but not used yet.
   void _define(Token name) {
     if (_scopes.isEmpty) return;
-    _scopes.peek().putIfAbsent(name, () => ScopeInfo(true, false));
+    _scopes.peek()[name.lexeme].isReady = true;
   }
 }
 

@@ -144,7 +144,7 @@ class Scanner {
           _identifier();
         } else {
           // Keeps scanning after reporting error, but will not execute code.
-          _errorReporter.error(_line, "Unexpected character.");
+          _errorReporter.lineError(_line, "Unexpected character.");
         }
         break;
     }
@@ -224,7 +224,7 @@ class Scanner {
 
     // Unterminated string
     if (_isAtEnd()) {
-      _errorReporter.error(_line, "Unterminated string.");
+      _errorReporter.lineError(_line, "Unterminated string.");
       return;
     }
 

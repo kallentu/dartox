@@ -21,7 +21,7 @@ class DartoxInstance {
     }
 
     DartoxFunction method = _clas.findMethod(name.lexeme);
-    if (method != null) return method;
+    if (method != null) return method.bind(this);
 
     // If instance doesn't have field, we throw an error.
     throw RuntimeError(name, "Undefined property '${name.lexeme}'.");

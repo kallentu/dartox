@@ -533,7 +533,7 @@ class Parser {
     return AnonFunction(parameters, body);
   }
 
-  /// primary → NUMBER | STRING | "false" | "true" | "nil"
+  /// primary → NUMBER | STRING | "false" | "true" | "nil" | "this"
   ///        | "(" expression ")"
   Expr _primary() {
     if (_match([TokenType.FALSE])) return Literal(false);
@@ -543,6 +543,8 @@ class Parser {
     if (_match([TokenType.NUMBER, TokenType.STRING])) {
       return Literal(_previous().literal);
     }
+
+    if (_match([TokenType.THIS])) return This(_previous());
 
     // Using a previously declared variable.
     if (_match([TokenType.IDENTIFIER])) {

@@ -186,6 +186,9 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   }
 
   @override
+  Object visitThisExpr(This expr) => _lookUpVariable(expr.keyword, expr);
+
+  @override
   Object visitUnaryExpr(Unary expr) {
     Object right = _evaluate(expr.right);
 

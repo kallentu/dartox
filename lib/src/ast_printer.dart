@@ -67,6 +67,9 @@ class AstPrinter extends ExprVisitor<String> {
       [expr.value, expr.left, expr.right]);
 
   @override
+  String visitThisExpr(This expr) => "this";
+
+  @override
   String visitUnaryExpr(Unary expr) =>
       _parenthesize([expr.operator.lexeme], [expr.right]);
 

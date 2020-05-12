@@ -6,7 +6,11 @@ class ErrorReporter {
   bool hadError = false;
   bool hadRuntimeError = false;
 
-  void error(int line, String message) {
+  void simpleError(String message) {
+    _reportSimple(message);
+  }
+
+  void lineError(int line, String message) {
     _report(line, "", message);
   }
 
@@ -28,6 +32,11 @@ class ErrorReporter {
 
   void _report(int line, String where, String message) {
     print("[line $line] Error $where : $message");
+    hadError = true;
+  }
+
+  void _reportSimple(String message) {
+    print("Error : $message");
     hadError = true;
   }
 }
