@@ -50,6 +50,12 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   void visitClassStatement(Class statement) {
     _declare(statement.name);
     _define(statement.name);
+
+    // Resolve the methods in the class.
+    for (Function method in statement.methods) {
+      FunctionType declaration = FunctionType.METHOD;
+      _resolveFunction(method, declaration);
+    }
   }
 
   @override
@@ -281,7 +287,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   }
 }
 
-enum FunctionType { NONE, FUNCTION }
+enum FunctionType { NONE, FUNCTION, METHOD }
 
 enum LoopType { NONE, LOOP }
 

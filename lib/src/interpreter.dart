@@ -292,7 +292,15 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   @override
   void visitClassStatement(Class statement) {
     _environment.define(statement.name.lexeme, null);
-    DartoxClass clas = DartoxClass(statement.name.lexeme);
+
+    // Turn each of the class methods into its runtime representation.
+    Map<String, DartoxFunction> methods = HashMap();
+    for (Function method in statement.methods) {
+      DartoxFunction function = DartoxFunction(method, _environment);
+      methods.putIfAbsent(method.name.lexeme, () => function);
+    }
+
+    DartoxClass clas = DartoxClass(statement.name.lexeme, methods);
     _environment.assign(statement.name, clas);
   }
 

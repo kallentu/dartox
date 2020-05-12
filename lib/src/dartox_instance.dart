@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:dartox/src/dartox_class.dart';
+import 'package:dartox/src/dartox_function.dart';
 import 'package:dartox/src/runtime_error.dart';
 import 'package:dartox/src/token.dart';
 
@@ -18,6 +19,9 @@ class DartoxInstance {
     if (_fields.containsKey(name.lexeme)) {
       return _fields[name.lexeme];
     }
+
+    DartoxFunction method = _clas.findMethod(name.lexeme);
+    if (method != null) return method;
 
     // If instance doesn't have field, we throw an error.
     throw RuntimeError(name, "Undefined property '${name.lexeme}'.");
