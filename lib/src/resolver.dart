@@ -61,6 +61,10 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     // Resolve the methods in the class.
     for (Function method in statement.methods) {
       FunctionType declaration = FunctionType.METHOD;
+      if (method.name.lexeme == "init") {
+        declaration = FunctionType.INITIALIZER;
+      }
+
       _resolveFunction(method, declaration);
     }
 
@@ -125,6 +129,11 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     }
 
     if (statement.value != null) {
+      if (_currentFunction == FunctionType.INITIALIZER) {
+        _errorReporter.tokenError(
+            statement.keyword, "Cannot return a value from an initializer.");
+      }
+
       _resolveExpr(statement.value);
     }
   }
@@ -314,7 +323,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 
 enum ClassType { NONE, CLASS }
 
-enum FunctionType { NONE, FUNCTION, METHOD }
+enum FunctionType { NONE, FUNCTION, INITIALIZER, METHOD }
 
 enum LoopType { NONE, LOOP }
 

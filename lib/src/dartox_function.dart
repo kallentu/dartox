@@ -35,6 +35,9 @@ class DartoxFunction implements DartoxCallable {
       interpreter.executeBlock(_declaration.body, environment);
     } catch (e) {
       if (e is ReturnException) {
+        // Disallow returns in initializer.
+        if (_isInitializer) return _closure.getAt(0, "this");
+
         // Make this return value of our call.
         return e.value;
       }
