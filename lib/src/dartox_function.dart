@@ -11,7 +11,9 @@ class DartoxFunction implements DartoxCallable {
   /// Environment that is active when function is declared, not when it's
   /// called.
   final Environment _closure;
-  DartoxFunction(this._declaration, this._closure);
+  final bool _isInitializer;
+
+  DartoxFunction(this._declaration, this._closure, this._isInitializer);
 
   @override
   int arity() => _declaration.params.length;
@@ -38,6 +40,10 @@ class DartoxFunction implements DartoxCallable {
       }
     }
 
+    // init() methods always return this.
+    // Avoids weird edge case when trying to invoke init() directly.
+    if (_isInitializer) return _closure.getAt(0, "this");
+
     return null;
   }
 
@@ -50,6 +56,6 @@ class DartoxFunction implements DartoxCallable {
   DartoxFunction bind(DartoxInstance instance) {
     Environment environment = Environment.withEnclosing(_closure);
     environment.define("this", instance);
-    return DartoxFunction(_declaration, environment);
+    return DartoxFunction(_declaration, environment, _isInitializer);
   }
 }

@@ -44,7 +44,8 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   @override
   Object visitAnonFunctionExpr(AnonFunction anonFunction) => DartoxFunction(
       Function.withNoName(anonFunction.params, anonFunction.body),
-      _environment);
+      _environment,
+      false);
 
   @override
   Object visitBinaryExpr(Binary expr) {
@@ -210,7 +211,7 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
   @override
   void visitFunctionStatement(Function statement) => _environment.define(
-      statement.name.lexeme, DartoxFunction(statement, _environment));
+      statement.name.lexeme, DartoxFunction(statement, _environment, false));
 
   @override
   void visitIfStatement(If statement) {
@@ -299,7 +300,8 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
     // Turn each of the class methods into its runtime representation.
     Map<String, DartoxFunction> methods = HashMap();
     for (Function method in statement.methods) {
-      DartoxFunction function = DartoxFunction(method, _environment);
+      DartoxFunction function =
+          DartoxFunction(method, _environment, method.name.lexeme == "init");
       methods.putIfAbsent(method.name.lexeme, () => function);
     }
 
