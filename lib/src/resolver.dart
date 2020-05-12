@@ -18,6 +18,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   /// If false, not finished being initialized.
   final Stack<HashMap<String, ScopeInfo>> _scopes = Stack();
 
+  ClassType _currentClass = ClassType.NONE;
   FunctionType _currentFunction = FunctionType.NONE;
   LoopType _currentLoop = LoopType.NONE;
 
@@ -48,6 +49,9 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 
   @override
   void visitClassStatement(Class statement) {
+    ClassType enclosingClass = _currentClass;
+    _currentClass = ClassType.CLASS;
+
     _declare(statement.name);
     _define(statement.name);
 
@@ -61,6 +65,8 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     }
 
     _endScope();
+
+    _currentClass = enclosingClass;
   }
 
   @override
@@ -211,7 +217,15 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   /// Resolve like a local variable.
   /// This is set in [visitClassStatement].
   @override
-  void visitThisExpr(This expr) => _resolveLocal(expr, expr.keyword);
+  void visitThisExpr(This expr) {
+    // ie. print this;
+    if (_currentClass == ClassType.NONE) {
+      _errorReporter.tokenError(
+          expr.keyword, "Cannot use 'this' outside of a class.");
+    }
+
+    _resolveLocal(expr, expr.keyword);
+  }
 
   @override
   void visitUnaryExpr(Unary expr) => _resolveExpr(expr.right);
@@ -297,6 +311,8 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _scopes.peek()[name.lexeme].isReady = true;
   }
 }
+
+enum ClassType { NONE, CLASS }
 
 enum FunctionType { NONE, FUNCTION, METHOD }
 
