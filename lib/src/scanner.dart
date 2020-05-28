@@ -32,6 +32,7 @@ class Scanner {
     _keywords.putIfAbsent("or", () => TokenType.OR);
     _keywords.putIfAbsent("print", () => TokenType.PRINT);
     _keywords.putIfAbsent("return", () => TokenType.RETURN);
+    _keywords.putIfAbsent("static", () => TokenType.STATIC);
     _keywords.putIfAbsent("super", () => TokenType.SUPER);
     _keywords.putIfAbsent("this", () => TokenType.THIS);
     _keywords.putIfAbsent("true", () => TokenType.TRUE);

@@ -40,7 +40,7 @@ main(List<String> args) {
   ], [
     "Block      : List<Statement> statements",
     "Break      : Token keyword",
-    "Class      : Token name, List<Function> methods",
+    "Class      : Token name, List<Function> methods, List<Function> staticMethods",
     "Continue   : Token keyword",
     "Expression : Expr expression",
     "Function   : Token name, List<Token> params, List<Statement> body",

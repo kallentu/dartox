@@ -305,7 +305,13 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
       methods.putIfAbsent(method.name.lexeme, () => function);
     }
 
-    DartoxClass clas = DartoxClass(statement.name.lexeme, methods);
+    Map<String, DartoxFunction> staticMethods = HashMap();
+    for (Function method in statement.staticMethods) {
+      DartoxFunction function = DartoxFunction(method, _environment, false);
+      staticMethods.putIfAbsent(method.name.lexeme, () => function);
+    }
+
+    DartoxClass clas = DartoxClass(statement.name.lexeme, methods, staticMethods);
     _environment.assign(statement.name, clas);
   }
 

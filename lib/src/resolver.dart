@@ -68,6 +68,11 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
       _resolveFunction(method, declaration);
     }
 
+    // Resolve the static methods in the class.
+    for (Function method in statement.staticMethods) {
+      _resolveFunction(method, FunctionType.METHOD);
+    }
+
     _endScope();
 
     _currentClass = enclosingClass;

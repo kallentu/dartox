@@ -44,15 +44,19 @@ class Parser {
     _consume(TokenType.LEFT_BRACE, "Expected '{' before class body.");
 
     List<Function> methods = List();
+    List<Function> staticMethods = List();
     while (!_check(TokenType.RIGHT_BRACE) && !_isAtEnd()) {
-      methods.add(_function("method"));
+      if (_match([TokenType.STATIC])) {
+        staticMethods.add(_function("static method"));
+      } else {
+        methods.add(_function("method"));
+      }
     }
 
     _consume(TokenType.RIGHT_BRACE, "Expected '}' after class body.");
-    return Class(name, methods);
+    return Class(name, methods, staticMethods);
   }
 
-  /// funDecl  → "fun" function
   /// function → IDENTIFIER "(" parameters? ")" block
   /// parameters → IDENTIFIER ( "," IDENTIFIER )*
   Function _function(String kind) {
