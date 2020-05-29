@@ -73,6 +73,9 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
       _resolveFunction(method, FunctionType.METHOD);
     }
 
+    // Resolve the getters in the class.
+    statement.getters.forEach((getter) => _resolveStatement(getter));
+
     _endScope();
 
     _currentClass = enclosingClass;
@@ -113,6 +116,18 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 
     // Introduces a scope and bind its parameters into that scope.
     _resolveFunction(statement, FunctionType.FUNCTION);
+  }
+
+  @override
+  void visitGetterStatement(Getter statement) {
+    FunctionType enclosingFunction = _currentFunction;
+    _currentFunction = FunctionType.GETTER;
+
+    _beginScope();
+    resolveStatements(statement.body);
+    _endScope();
+
+    _currentFunction = enclosingFunction;
   }
 
   @override
@@ -328,7 +343,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 
 enum ClassType { NONE, CLASS }
 
-enum FunctionType { NONE, FUNCTION, INITIALIZER, METHOD }
+enum FunctionType { NONE, FUNCTION, INITIALIZER, GETTER, METHOD }
 
 enum LoopType { NONE, LOOP }
 

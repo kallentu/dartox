@@ -40,11 +40,12 @@ main(List<String> args) {
   ], [
     "Block      : List<Statement> statements",
     "Break      : Token keyword",
-    "Class      : Token name, List<Function> methods, List<Function> staticMethods",
+    "Class      : Token name, List<Function> methods, List<Function> staticMethods, List<Getter> getters",
     "Continue   : Token keyword",
     "Expression : Expr expression",
     "Function   : Token name, List<Token> params, List<Statement> body",
     "For        : Statement init, Expr condition, Statement body, Expression increment",
+    "Getter     : Token name, List<Statement> body",
     "If         : Expr condition, Statement thenBranch, Statement elseBranch",
     "Print      : Expr expression",
     "Return     : Token keyword, Expr value",

@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:dartox/src/dartox_callable.dart';
 import 'package:dartox/src/dartox_class.dart';
 import 'package:dartox/src/dartox_function.dart';
+import 'package:dartox/src/dartox_getter.dart';
 import 'package:dartox/src/dartox_instance.dart';
 import 'package:dartox/src/environment.dart';
 import 'package:dartox/src/error.dart';
@@ -131,7 +132,10 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   Object visitGetExpr(Get expr) {
     Object object = _evaluate(expr.object);
     if (object is DartoxInstance) {
-      return object.get(expr.name);
+      Object value = object.get(expr.name);
+
+      // Must execute the block if getter value.
+      return value is DartoxGetter ? value.execute(this) : value;
     }
 
     throw RuntimeError(expr.name, "Only instances have properties.");
@@ -291,6 +295,10 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   }
 
   @override
+  void visitGetterStatement(Getter statement) => executeBlock(
+      statement.body, Environment.withEnclosing(_environment));
+
+  @override
   void visitBreakStatement(Break statement) => throw BreakException();
 
   @override
@@ -305,13 +313,19 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
       methods.putIfAbsent(method.name.lexeme, () => function);
     }
 
-    Map<String, DartoxFunction> staticMethods = HashMap();
+    Map<Token, DartoxFunction> staticMethods = HashMap();
     for (Function method in statement.staticMethods) {
       DartoxFunction function = DartoxFunction(method, _environment, false);
-      staticMethods.putIfAbsent(method.name.lexeme, () => function);
+      staticMethods.putIfAbsent(method.name, () => function);
     }
 
-    DartoxClass clas = DartoxClass(statement.name.lexeme, methods, staticMethods);
+    Map<Token, DartoxGetter> getters = HashMap();
+    for (Getter getter in statement.getters) {
+      DartoxGetter getterRuntime = DartoxGetter(getter, _environment);
+      getters.putIfAbsent(getter.name, () => getterRuntime);
+    }
+
+    DartoxClass clas = DartoxClass(statement.name.lexeme, methods, staticMethods, getters);
     _environment.assign(statement.name, clas);
   }
 

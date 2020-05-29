@@ -13,6 +13,7 @@ abstract class StatementVisitor<R> {
   R visitExpressionStatement(Expression statement);
   R visitFunctionStatement(Function statement);
   R visitForStatement(For statement);
+  R visitGetterStatement(Getter statement);
   R visitIfStatement(If statement);
   R visitPrintStatement(Print statement);
   R visitReturnStatement(Return statement);
@@ -42,7 +43,8 @@ class Class extends Statement {
   final Token name;
   final List<Function> methods;
   final List<Function> staticMethods;
-  Class(this.name, this.methods, this.staticMethods);
+  final List<Getter> getters;
+  Class(this.name, this.methods, this.staticMethods, this.getters);
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitClassStatement(this);
@@ -88,6 +90,16 @@ class For extends Statement {
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitForStatement(this);
+  }
+}
+
+class Getter extends Statement {
+  final Token name;
+  final List<Statement> body;
+  Getter(this.name, this.body);
+  @override
+  R accept<R>(StatementVisitor<R> visitor) {
+    return visitor.visitGetterStatement(this);
   }
 }
 

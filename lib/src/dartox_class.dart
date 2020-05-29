@@ -1,17 +1,23 @@
 import 'package:dartox/src/dartox_callable.dart';
 import 'package:dartox/src/dartox_function.dart';
+import 'package:dartox/src/dartox_getter.dart';
 import 'package:dartox/src/dartox_instance.dart';
 import 'package:dartox/src/interpreter.dart';
-import 'package:dartox/src/runtime_error.dart';
 import 'package:dartox/src/token.dart';
 
 /// Runtime representation of a class.
-class DartoxClass implements DartoxCallable, DartoxInstance {
+class DartoxClass extends DartoxInstance implements DartoxCallable {
   final String name;
   final Map<String, DartoxFunction> _methods;
-  final Map<String, DartoxFunction> _staticMethods;
+  final Map<Token, DartoxFunction> _staticMethods;
+  final Map<Token, DartoxGetter> _getters;
 
-  DartoxClass(this.name, this._methods, this._staticMethods);
+  /// A DartoxClass has no available methods that aren't static that can be used.
+  /// If we end up calling it as an instance, we throw and error in [DartoxInstance].
+  DartoxClass(this.name, this._methods, this._staticMethods, this._getters) : super(null) {
+    // Only static methods can be called at class level.
+    _staticMethods.forEach((name, fn) => super.set(name, fn));
+  }
 
   @override
   String toString() => name;
@@ -19,13 +25,16 @@ class DartoxClass implements DartoxCallable, DartoxInstance {
   @override
   int arity() {
     DartoxFunction initializer = findMethod("init");
-    if (initializer != null) initializer.arity();
+    if (initializer != null) return initializer.arity();
     return 0;
   }
 
   @override
   Object call(Interpreter interpreter, List<Object> arguments) {
     DartoxInstance instance = DartoxInstance(this);
+
+    // Initialize the getter fields as we create the class.
+    _getters.forEach((name, getter) => instance.set(name, getter));
 
     // Dartox initializer uses "init".
     // We look for the initializer and bind, invoke it like a method call.
@@ -45,19 +54,4 @@ class DartoxClass implements DartoxCallable, DartoxInstance {
     return null;
   }
 
-  /// For getting static methods within a class, nothing else.
-  @override
-  Object get(Token name) {
-    if (_staticMethods.containsKey(name.lexeme)) {
-      return _staticMethods[name.lexeme];
-    }
-
-    // If class instance doesn't have static method, we throw an error.
-    throw RuntimeError(name, "Undefined static method '${name.lexeme}'.");
-  }
-
-  /// For setting static methods within a class, nothing else.
-  @override
-  void set(Token name, Object value) =>
-      _staticMethods.putIfAbsent(name.lexeme, () => value);
 }

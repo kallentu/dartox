@@ -45,22 +45,35 @@ class Parser {
 
     List<Function> methods = List();
     List<Function> staticMethods = List();
+    List<Getter> getters = List();
+
     while (!_check(TokenType.RIGHT_BRACE) && !_isAtEnd()) {
       if (_match([TokenType.STATIC])) {
         staticMethods.add(_function("static method"));
       } else {
-        methods.add(_function("method"));
+        // Either getter or a function
+        Statement getOrFun = _function("method");
+        if (getOrFun is Getter) {
+          getters.add(getOrFun);
+        } else if (getOrFun is Function) {
+          methods.add(getOrFun);
+        }
       }
     }
 
     _consume(TokenType.RIGHT_BRACE, "Expected '}' after class body.");
-    return Class(name, methods, staticMethods);
+    return Class(name, methods, staticMethods, getters);
   }
 
-  /// function → IDENTIFIER "(" parameters? ")" block
+  /// function → IDENTIFIER "(" parameters? ")" block | IDENTIFIER getter
   /// parameters → IDENTIFIER ( "," IDENTIFIER )*
-  Function _function(String kind) {
+  Statement _function(String kind) {
     Token name = _consume(TokenType.IDENTIFIER, "Expected " + kind + " name.");
+
+    /// getter → block
+    if (_match([TokenType.LEFT_BRACE])) {
+      return Getter(name, _block());
+    }
 
     // Parse the arguments.
     _consume(TokenType.LEFT_PAREN, "Expected '(' after " + kind + " name.");
