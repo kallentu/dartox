@@ -16,7 +16,6 @@ class DartoxInstance {
   @override
   String toString() => _clas.name + " instance";
 
-
   Object get(Token name) {
     if (_fields.containsKey(name.lexeme)) {
       Object field = _fields[name.lexeme];
@@ -25,7 +24,11 @@ class DartoxInstance {
       return field is DartoxGetter ? field.bind(this) : field;
     }
 
-    if (_clas == null) throw RuntimeError(name, "No class defined for DartoxInstance while finding '${name.lexeme}'.");
+    // See [DartoxClass] initialization.
+    if (_clas == null) {
+      throw RuntimeError(name,
+          "No class defined for DartoxInstance while finding '${name.lexeme}'.");
+    }
 
     DartoxFunction method = _clas.findMethod(name.lexeme);
     if (method != null) return method.bind(this);

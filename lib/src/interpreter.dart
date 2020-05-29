@@ -295,8 +295,8 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
   }
 
   @override
-  void visitGetterStatement(Getter statement) => executeBlock(
-      statement.body, Environment.withEnclosing(_environment));
+  void visitGetterStatement(Getter statement) =>
+      executeBlock(statement.body, Environment.withEnclosing(_environment));
 
   @override
   void visitBreakStatement(Break statement) => throw BreakException();
@@ -325,7 +325,8 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
       getters.putIfAbsent(getter.name, () => getterRuntime);
     }
 
-    DartoxClass clas = DartoxClass(statement.name.lexeme, methods, staticMethods, getters);
+    DartoxClass clas =
+        DartoxClass(statement.name.lexeme, methods, staticMethods, getters);
     _environment.assign(statement.name, clas);
   }
 

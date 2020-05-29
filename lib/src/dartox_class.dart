@@ -14,7 +14,8 @@ class DartoxClass extends DartoxInstance implements DartoxCallable {
 
   /// A DartoxClass has no available methods that aren't static that can be used.
   /// If we end up calling it as an instance, we throw and error in [DartoxInstance].
-  DartoxClass(this.name, this._methods, this._staticMethods, this._getters) : super(null) {
+  DartoxClass(this.name, this._methods, this._staticMethods, this._getters)
+      : super(null) {
     // Only static methods can be called at class level.
     _staticMethods.forEach((name, fn) => super.set(name, fn));
   }
@@ -53,5 +54,4 @@ class DartoxClass extends DartoxInstance implements DartoxCallable {
 
     return null;
   }
-
 }
