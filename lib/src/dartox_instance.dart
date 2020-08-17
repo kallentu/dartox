@@ -37,6 +37,13 @@ class DartoxInstance {
     throw RuntimeError(name, "Undefined property '${name.lexeme}'.");
   }
 
-  void set(Token name, Object value) =>
-      _fields.putIfAbsent(name.lexeme, () => value);
+  void set(Token name, Object value) {
+    // Setting a getter is not legal.
+    if (_fields.containsKey(name.lexeme) &&
+        _fields[name.lexeme] is DartoxGetter) {
+      throw RuntimeError(name, "Cannot set the getter field '${name.lexeme}'.");
+    }
+
+    _fields.putIfAbsent(name.lexeme, () => value);
+  }
 }
