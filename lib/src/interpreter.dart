@@ -334,8 +334,8 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
       getters.putIfAbsent(getter.name, () => getterRuntime);
     }
 
-    DartoxClass clas =
-        DartoxClass(statement.name.lexeme, methods, staticMethods, getters);
+    DartoxClass clas = DartoxClass(statement.name.lexeme,
+        superclass as DartoxClass, methods, staticMethods, getters);
     _environment.assign(statement.name, clas);
   }
 

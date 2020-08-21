@@ -8,13 +8,15 @@ import 'package:dartox/src/token.dart';
 /// Runtime representation of a class.
 class DartoxClass extends DartoxInstance implements DartoxCallable {
   final String name;
+  final DartoxClass _superclass;
   final Map<String, DartoxFunction> _methods;
   final Map<Token, DartoxFunction> _staticMethods;
   final Map<Token, DartoxGetter> _getters;
 
   /// A DartoxClass has no available methods that aren't static that can be used.
   /// If we end up calling it as an instance, we throw and error in [DartoxInstance].
-  DartoxClass(this.name, this._methods, this._staticMethods, this._getters)
+  DartoxClass(this.name, this._superclass, this._methods, this._staticMethods,
+      this._getters)
       : super(null) {
     // Only static methods can be called at class level.
     _staticMethods.forEach((name, fn) => super.set(name, fn));
