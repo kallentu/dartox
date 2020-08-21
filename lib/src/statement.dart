@@ -41,10 +41,11 @@ class Break extends Statement {
 
 class Class extends Statement {
   final Token name;
+  final Variable superclass;
   final List<Function> methods;
   final List<Function> staticMethods;
   final List<Getter> getters;
-  Class(this.name, this.methods, this.staticMethods, this.getters);
+  Class(this.name, this.superclass, this.methods, this.staticMethods, this.getters);
   @override
   R accept<R>(StatementVisitor<R> visitor) {
     return visitor.visitClassStatement(this);

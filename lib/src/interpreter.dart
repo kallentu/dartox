@@ -303,6 +303,15 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
   @override
   void visitClassStatement(Class statement) {
+    Object superclass = null;
+    if (statement.superclass != null) {
+      superclass = _evaluate(statement.superclass);
+      if (!(superclass is DartoxClass)) {
+        throw new RuntimeError(
+            statement.superclass.name, "Superclass must be a class.");
+      }
+    }
+
     _environment.define(statement.name.lexeme, null);
 
     // Turn each of the class methods into its runtime representation.

@@ -55,6 +55,16 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _declare(statement.name);
     _define(statement.name);
 
+    if (statement.superclass != null) {
+      // Tried to inherit from itself, error.
+      if (statement.name.lexeme == statement.superclass.name.lexeme) {
+        _errorReporter.tokenError(
+            statement.superclass.name, "A class cannot inherit from itself.");
+      }
+
+      _resolveExpr(statement.superclass);
+    }
+
     _beginScope();
     _scopes.peek()["this"] = ScopeInfo(true, false);
 

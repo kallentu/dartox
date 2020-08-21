@@ -38,9 +38,17 @@ class Parser {
     }
   }
 
-  /// classDecl → "class" IDENTIFIER "{" function* "}"
+  /// classDecl → "class" IDENTIFIER ( "<" IDENTIFIER )?
+  ///            "{" function* "}" ;
   Statement _classDeclaration() {
     Token name = _consume(TokenType.IDENTIFIER, "Expected class name.");
+
+    Variable superclass = null;
+    if (_match([TokenType.LESS])) {
+      _consume(TokenType.IDENTIFIER, "Expected superclass name.");
+      superclass = Variable(_previous());
+    }
+
     _consume(TokenType.LEFT_BRACE, "Expected '{' before class body.");
 
     List<Function> methods = List();
@@ -62,7 +70,7 @@ class Parser {
     }
 
     _consume(TokenType.RIGHT_BRACE, "Expected '}' after class body.");
-    return Class(name, methods, staticMethods, getters);
+    return Class(name, superclass, methods, staticMethods, getters);
   }
 
   /// function → IDENTIFIER "(" parameters? ")" block | IDENTIFIER getter
