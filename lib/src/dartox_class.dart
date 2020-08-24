@@ -54,6 +54,11 @@ class DartoxClass extends DartoxInstance implements DartoxCallable {
       return _methods[name];
     }
 
+    // Inherited method.
+    if (_superclass != null) {
+      return _superclass.findMethod(name);
+    }
+
     return null;
   }
 }
