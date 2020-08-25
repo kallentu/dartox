@@ -80,6 +80,10 @@ class AstPrinter extends ExprVisitor<String> {
   String visitAssignExpr(Assign expr) =>
       expr.name.toString() + " = " + expr.value.toString();
 
+  @override
+  String visitSuperExpr(Super expr) =>
+      expr.keyword.lexeme + '.' + expr.method.lexeme;
+
   String _parenthesize(List<String> names, List<Expr> expressions) {
     String contents = "(";
     for (String name in names) {

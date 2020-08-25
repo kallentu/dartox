@@ -558,8 +558,9 @@ class Parser {
     return AnonFunction(parameters, body);
   }
 
-  /// primary → NUMBER | STRING | "false" | "true" | "nil" | "this"
-  ///        | "(" expression ")"
+  /// primary → "true" | "false" | "nil" | "this"
+  ///        | NUMBER | STRING | IDENTIFIER | "(" expression ")"
+  ///        | "super" "." IDENTIFIER ;
   Expr _primary() {
     if (_match([TokenType.FALSE])) return Literal(false);
     if (_match([TokenType.TRUE])) return Literal(true);
@@ -567,6 +568,14 @@ class Parser {
 
     if (_match([TokenType.NUMBER, TokenType.STRING])) {
       return Literal(_previous().literal);
+    }
+
+    if (_match([TokenType.SUPER])) {
+      Token keyword = _previous();
+      _consume(TokenType.DOT, "Expected '.' after 'super'.");
+      Token method =
+          _consume(TokenType.IDENTIFIER, "Expected superclass method name.");
+      return Super(keyword, method);
     }
 
     if (_match([TokenType.THIS])) return This(_previous());

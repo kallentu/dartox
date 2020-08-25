@@ -28,6 +28,7 @@ main(List<String> args) {
     "Literal      : Object value",
     "Logical      : Expr left, Token operator, Expr right",
     "Set          : Expr object, Token name, Expr value",
+    "Super        : Token keyword, Token method",
     "Ternary      : Expr value, Token operator1, Expr left, Token operator2, Expr right",
     "This         : Token keyword",
     "Unary        : Token operator, Expr right",
