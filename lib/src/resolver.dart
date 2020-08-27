@@ -55,6 +55,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     _declare(statement.name);
     _define(statement.name);
 
+    // Start the scope for "super"
     if (statement.superclass != null) {
       // Tried to inherit from itself, error.
       if (statement.name.lexeme == statement.superclass.name.lexeme) {
@@ -63,6 +64,8 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
       }
 
       _resolveExpr(statement.superclass);
+      _beginScope();
+      _scopes.peek().putIfAbsent("super", () => ScopeInfo(true, false));
     }
 
     _beginScope();
@@ -87,6 +90,8 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     statement.getters.forEach((getter) => _resolveStatement(getter));
 
     _endScope();
+
+    if (statement.superclass != null) _endScope();
 
     _currentClass = enclosingClass;
   }
@@ -247,6 +252,9 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   }
 
   @override
+  void visitSuperExpr(Super expr) => _resolveLocal(expr, expr.keyword);
+
+  @override
   void visitTernaryExpr(Ternary expr) {
     _resolveExpr(expr.value);
     _resolveExpr(expr.left);
@@ -321,7 +329,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
     // Variables that were never used in any other part of the code will report
     // an error.
     void checkUnusedVariables(String name, ScopeInfo scopeInfo) {
-      if (!scopeInfo.wasUsed && name != "this") {
+      if (!scopeInfo.wasUsed && name != "this" && name != "super") {
         _errorReporter.simpleError("Variable '$name' is unused.");
       }
     }

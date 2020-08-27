@@ -176,6 +176,28 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
     return value;
   }
 
+  /// Essentially the code for looking up a method in a getter,
+  /// except findMethod is on the superclass.
+  @override
+  Object visitSuperExpr(Super expr) {
+    // We look up "super" to find it in the proper environment.
+    int distance = locals[expr];
+    DartoxClass superclass = _environment.getAt(distance, "super");
+
+    // "this" is always one level nearer than "super"'s environment.
+    DartoxInstance thisInstance = _environment.getAt(distance - 1, "this");
+
+    // Lastly, bind the method to "this".
+    DartoxFunction method = superclass.findMethod(expr.method.lexeme);
+
+    if (method == null) {
+      throw RuntimeError(
+          expr.method, "Undefined property '" + expr.method.lexeme + "'.");
+    }
+
+    return method.bind(thisInstance);
+  }
+
   @override
   Object visitTernaryExpr(Ternary expr) {
     // Only ternary expression is ?:
@@ -314,7 +336,17 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
     _environment.define(statement.name.lexeme, null);
 
+    // Create new environment for superclass.
+    // Store the reference for the superclass.
+    if (statement.superclass != null) {
+      _environment = Environment.withEnclosing(_environment);
+      _environment.define("super", superclass);
+    }
+
     // Turn each of the class methods into its runtime representation.
+    // If we have a super class, the DartoxFunctions will be captured by
+    // the environment that holds the "super" in their closure so they
+    // can use it.
     Map<String, DartoxFunction> methods = HashMap();
     for (Function method in statement.methods) {
       DartoxFunction function =
@@ -336,6 +368,13 @@ class Interpreter implements ExprVisitor<Object>, StatementVisitor<void> {
 
     DartoxClass clas = DartoxClass(statement.name.lexeme,
         superclass as DartoxClass, methods, staticMethods, getters);
+
+    // Pop the environment for the methods (that need super) and use the
+    // previous one.
+    if (superclass != null) {
+      _environment = _environment.enclosing;
+    }
+
     _environment.assign(statement.name, clas);
   }
 
