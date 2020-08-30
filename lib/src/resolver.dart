@@ -57,6 +57,10 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
 
     // Start the scope for "super"
     if (statement.superclass != null) {
+      // We will resolve a super expression, knowing that we are
+      // in a subclass.
+      _currentClass = ClassType.SUBCLASS;
+
       // Tried to inherit from itself, error.
       if (statement.name.lexeme == statement.superclass.name.lexeme) {
         _errorReporter.tokenError(
@@ -252,7 +256,17 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   }
 
   @override
-  void visitSuperExpr(Super expr) => _resolveLocal(expr, expr.keyword);
+  void visitSuperExpr(Super expr) {
+    if (_currentClass == ClassType.NONE) {
+      _errorReporter.tokenError(
+          expr.keyword, "Cannot use 'super' outside of a class.");
+    } else if (_currentClass != ClassType.SUBCLASS) {
+      _errorReporter.tokenError(
+          expr.keyword, "Cannot use 'super' in a class with no superclass.");
+    }
+
+    _resolveLocal(expr, expr.keyword);
+  }
 
   @override
   void visitTernaryExpr(Ternary expr) {
@@ -359,7 +373,7 @@ class Resolver implements ExprVisitor<void>, StatementVisitor<void> {
   }
 }
 
-enum ClassType { NONE, CLASS }
+enum ClassType { NONE, CLASS, SUBCLASS }
 
 enum FunctionType { NONE, FUNCTION, INITIALIZER, GETTER, METHOD }
 
